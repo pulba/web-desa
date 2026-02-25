@@ -1,0 +1,31 @@
+{
+  "slides": [
+    {
+      "title": "Selamat Datang di Portal Resmi Desa Makmur",
+      "subtitle": "Mewujudkan tata kelola desa yang transparan, akuntabel, dan melayani sepenuh hati.",
+      "image": "/uploads/ChatGPT Image Feb 25, 2026, 02_29_37 PM.webp",
+      "ctaLabel": "Pelajari Selengkapnya",
+      "ctaLink": "/profil"
+    },
+    {
+      "title": "Potensi Wisata Alam Nan Asri",
+      "subtitle": "Nikmati keindahan perbukitan dan budaya lokal yang masih terjaga keasliannya.",
+      "image": "/uploads/idris-r-n9AUNCuGy6A-unsplash.jpg",
+      "ctaLabel": "Jelajahi Wisata",
+      "ctaLink": "/galeri"
+    },
+    {
+      "title": "Dukung Produk Unggulan UMKM Desa",
+      "subtitle": "Bantu gerakkan ekonomi lokal dengan berbelanja produk berkualitas buatan warga kami.",
+      "image": "/uploads/foto2.webp",
+      "ctaLabel": "Mulai Belanja",
+      "ctaLink": "/belanja"
+    }
+  ],
+  "welcome": {
+    "quote": "Selamat datang di website resmi Desa Makmur. Portal ini kami hadirkan sebagai wujud transparansi dan upaya meningkatkan pelayanan kepada masyarakat di era digital.",
+    "name": "Ir. H. Sudirman, M.Si.",
+    "title": "Kepala Desa Makmur",
+    "image": "/uploads/ChatGPT Image Feb 25, 2026, 02_31_45 PM.webp"
+  }
+}

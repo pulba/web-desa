@@ -1,0 +1,691 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Container from "../../components/Container.astro";
+import Button from "../../components/Button.astro";
+import { getCollection, getEntry } from "astro:content";
+
+export async function getStaticPaths() {
+    const umkmEntries = await getCollection("umkm");
+    return umkmEntries.map((entry) => ({
+        params: { slug: entry.slug },
+        props: { entry },
+    }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Get phone: prefer seller's own phone, fallback to settings
+const settingsEntry = await getEntry("settings", "main");
+const sellerPhone =
+    entry.data.phone || settingsEntry?.data?.phone || "(021) 12345678";
+// Format phone for wa.me (strip non-digits, ensure country code)
+const waPhone = sellerPhone.replace(/\D/g, "").replace(/^0/, "62");
+const waMessage = encodeURIComponent(
+    `Halo, saya tertarik dengan produk *${entry.data.name}* seharga Rp${entry.data.price.toLocaleString("id-ID")}.\n\nBisa info lebih lanjut?\n\nLink: ${Astro.url.href}`,
+);
+const waLink = `https://wa.me/${waPhone}?text=${waMessage}`;
+
+// Product status
+const status = entry.data.status || "Tersedia";
+const statusConfig = {
+    Tersedia: { emoji: "✅", color: "text-green-600" },
+    Habis: { emoji: "❌", color: "text-red-500" },
+    "Pre-Order": { emoji: "⏳", color: "text-amber-600" },
+}[status] || { emoji: "✅", color: "text-green-600" };
+
+// Related products (same category, exclude current)
+const allUMKM = await getCollection("umkm");
+const relatedProducts = allUMKM
+    .filter(
+        (p) => p.data.category === entry.data.category && p.slug !== entry.slug,
+    )
+    .slice(0, 4);
+
+// Share URLs
+const pageUrl = Astro.url.href;
+const shareText = encodeURIComponent(
+    `${entry.data.name} — Rp${entry.data.price.toLocaleString("id-ID")} | Belanja Desa`,
+);
+const shareFb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
+const shareWa = `https://wa.me/?text=${shareText}%20${encodeURIComponent(pageUrl)}`;
+---
+
+<MainLayout
+    title={`${entry.data.name} — Belanja Desa`}
+    description={entry.data.description ||
+        `Beli ${entry.data.name} seharga Rp${entry.data.price} di Belanja Desa.`}
+    image={entry.data.image}
+    type="article"
+>
+    <section class="pt-32 pb-16">
+        <Container>
+            <!-- Breadcrumb -->
+            <nav
+                class="flex items-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-8 space-x-2 animate-fade-in"
+            >
+                <a href="/" class="hover:text-primary-600 transition-colors"
+                    >Beranda</a
+                >
+                <span>/</span>
+                <a
+                    href="/belanja"
+                    class="hover:text-primary-600 transition-colors">Belanja</a
+                >
+                <span>/</span>
+                <span class="text-primary-600">{entry.data.category}</span>
+            </nav>
+
+            <div
+                class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start"
+            >
+                <!-- Image Gallery -->
+                <div class="space-y-4 animate-fade-in-up">
+                    <!-- Main Image -->
+                    <div
+                        id="main-image-wrapper"
+                        class="aspect-square rounded-3xl overflow-hidden bg-slate-100 border border-slate-200 cursor-zoom-in relative group"
+                    >
+                        <img
+                            id="main-image"
+                            src={entry.data.image}
+                            alt={entry.data.name}
+                            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div
+                            class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-8 w-8 text-white opacity-0 group-hover:opacity-70 transition-opacity drop-shadow-lg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                                ></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <!-- Thumbnails -->
+                    <div class="grid grid-cols-4 gap-3" id="gallery-thumbs">
+                        {
+                            entry.data.gallery && entry.data.gallery.length > 0
+                                ? entry.data.gallery
+                                      .slice(0, 4)
+                                      .map((img: string, i: number) => (
+                                          <button
+                                              data-src={img}
+                                              class="gallery-thumb aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-primary-500 transition-all cursor-pointer"
+                                          >
+                                              <img
+                                                  src={img}
+                                                  alt={`${entry.data.name} foto ${i + 1}`}
+                                                  class="w-full h-full object-cover"
+                                                  loading="lazy"
+                                              />
+                                          </button>
+                                      ))
+                                : [1, 2, 3, 4].map(() => (
+                                      <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200" />
+                                  ))
+                        }
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div
+                    class="space-y-6 animate-fade-in-up"
+                    style="animation-delay: 100ms"
+                >
+                    <!-- Category Badge -->
+                    <span
+                        class="inline-block px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full uppercase tracking-wider"
+                    >
+                        {entry.data.category}
+                    </span>
+
+                    <!-- Title & Price -->
+                    <div class="relative">
+                        <div class="pr-12">
+                            <h1
+                                class="text-2xl md:text-3xl font-bold text-slate-900 mb-2 leading-tight"
+                            >
+                                {entry.data.name}
+                            </h1>
+                            <div
+                                class="flex items-center gap-3 text-sm text-slate-500 mb-4"
+                            >
+                                <span class="flex items-center text-slate-300">
+                                    M<svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4 fill-current"
+                                        viewBox="0 0 24 24"
+                                        ><path
+                                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                        ></path></svg
+                                    >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4 fill-current"
+                                        viewBox="0 0 24 24"
+                                        ><path
+                                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                        ></path></svg
+                                    >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4 fill-current"
+                                        viewBox="0 0 24 24"
+                                        ><path
+                                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                        ></path></svg
+                                    >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4 fill-current"
+                                        viewBox="0 0 24 24"
+                                        ><path
+                                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                        ></path></svg
+                                    >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4 fill-current"
+                                        viewBox="0 0 24 24"
+                                        ><path
+                                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                        ></path></svg
+                                    >
+                                </span>
+                                <span>Penilaian (0)</span>
+                                <span class="w-1 h-1 bg-slate-300 rounded-full"
+                                ></span>
+                                <span class="flex items-center gap-1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        ><path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                        ></path></svg
+                                    >
+                                    Barang & Jasa
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Wishlist button -->
+                        <button
+                            class="absolute top-0 right-0 p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                            title="Tambah ke Wishlist"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                ></path>
+                            </svg>
+                        </button>
+
+                        <div class="flex items-center gap-4">
+                            <span
+                                class="text-3xl font-extrabold text-slate-900"
+                            >
+                                Rp{entry.data.price.toLocaleString("id-ID")}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="border-t border-slate-100 pt-6">
+                        <h4
+                            class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3"
+                        >
+                            Deskripsi Produk
+                        </h4>
+                        <div
+                            class="prose prose-slate prose-sm max-w-none text-slate-600 leading-relaxed"
+                        >
+                            <Content />
+                        </div>
+                    </div>
+
+                    <!-- Seller Card -->
+                    <div
+                        class="p-5 bg-slate-50 rounded-2xl border border-slate-100"
+                    >
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-bold text-lg shadow-sm"
+                            >
+                                {entry.data.owner?.[0] || "?"}
+                            </div>
+                            <div>
+                                <p
+                                    class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"
+                                >
+                                    Penjual
+                                </p>
+                                <p class="font-bold text-slate-900">
+                                    {entry.data.owner}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-3 mt-4">
+                        <a
+                            href={waLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-green-700 text-white font-bold rounded-lg hover:bg-green-800 transition-all text-sm mb-1"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                ><path
+                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+                                ></path></svg
+                            >
+                            Hubungi Penjual
+                        </a>
+                    </div>
+
+                    <!-- Inline Share -->
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-xs text-slate-500 font-medium mr-2"
+                            >Bagikan:</span
+                        >
+                        <a
+                            href={shareFb}
+                            target="_blank"
+                            rel="noopener"
+                            class="text-slate-400 hover:text-blue-600 transition-colors"
+                            title="Bagikan ke Facebook"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 fill-current"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    d="M12 2.04c-5.5 0-9.96 4.46-9.96 9.96c0 4.96 3.63 9.07 8.4 9.84v-6.96h-2.53v-2.88h2.53v-2.2c0-2.5 1.53-3.87 3.77-3.87c1.07 0 1.99.08 2.26.12v2.62h-1.55c-1.22 0-1.46.58-1.46 1.43v1.9h2.9l-.38 2.88h-2.52v6.96c4.77-.77 8.4-4.88 8.4-9.84c0-5.5-4.46-9.96-9.96-9.96z"
+                                ></path></svg
+                            >
+                        </a>
+                        <a
+                            href={shareWa}
+                            target="_blank"
+                            rel="noopener"
+                            class="text-slate-400 hover:text-green-600 transition-colors"
+                            title="Bagikan ke WhatsApp"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5 fill-current"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+                                ></path></svg
+                            >
+                        </a>
+                        <a
+                            href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(pageUrl)}`}
+                            target="_blank"
+                            rel="noopener"
+                            class="text-slate-400 hover:text-slate-900 transition-colors"
+                            title="Bagikan ke X/Twitter"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-4 w-4 fill-current ml-1"
+                                viewBox="0 0 24 24"
+                                ><path
+                                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                                ></path></svg
+                            >
+                        </a>
+                        <button
+                            id="copy-link-btn"
+                            class="text-slate-400 hover:text-slate-700 transition-colors ml-1"
+                            title="Salin Link"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                ><path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                ></path></svg
+                            >
+                        </button>
+                        <span
+                            id="copy-link-text"
+                            class="text-[10px] text-green-600 font-bold hidden transition-all"
+                            >Link tersalin!</span
+                        >
+                    </div>
+
+                    <!-- Info Grid -->
+                    <div class="grid grid-cols-3 gap-3 pt-2">
+                        <div class="p-4 bg-slate-50 rounded-2xl text-center">
+                            <span class="block text-lg mb-1">📦</span>
+                            <span
+                                class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5"
+                                >Pengiriman</span
+                            >
+                            <span class="text-xs font-bold text-slate-700"
+                                >Dalam & Luar Desa</span
+                            >
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-2xl text-center">
+                            <span class="block text-lg mb-1">💳</span>
+                            <span
+                                class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5"
+                                >Pembayaran</span
+                            >
+                            <span class="text-xs font-bold text-slate-700"
+                                >Transfer / COD</span
+                            >
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-2xl text-center">
+                            <span class="block text-lg mb-1"
+                                >{statusConfig.emoji}</span
+                            >
+                            <span
+                                class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5"
+                                >Status</span
+                            >
+                            <span
+                                class={`text-xs font-bold ${statusConfig.color}`}
+                                >{status}</span
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Container>
+        <!-- Ulasan Pembeli -->
+        <section
+            class="pb-12 border-t border-slate-100 bg-slate-50 pt-12 mt-12"
+        >
+            <Container>
+                <h2
+                    class="text-xl font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm"
+                >
+                    Ulasan Pembeli
+                </h2>
+                <div
+                    class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm"
+                >
+                    <div
+                        class="flex flex-col items-center justify-center text-slate-400 gap-3"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-10 w-10 text-slate-300"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            ></path>
+                        </svg>
+                        <p class="font-medium text-sm">
+                            Tidak ada ulasan untuk saat ini
+                        </p>
+                    </div>
+                </div>
+            </Container>
+        </section>
+
+        <!-- Related Products -->
+        {
+            relatedProducts.length > 0 && (
+                <section class="pb-24">
+                    <Container>
+                        <div class="border-t border-slate-100 pt-16">
+                            <h2 class="text-2xl font-bold text-slate-900 mb-8">
+                                Produk Serupa
+                            </h2>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                {relatedProducts.map((product) => (
+                                    <a
+                                        href={`/belanja/${product.slug}`}
+                                        class="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                                    >
+                                        <div class="aspect-square overflow-hidden">
+                                            <img
+                                                src={product.data.image}
+                                                alt={product.data.name}
+                                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                        <div class="p-4">
+                                            <h3 class="text-sm font-bold text-slate-900 group-hover:text-primary-600 transition-colors line-clamp-1 mb-1">
+                                                {product.data.name}
+                                            </h3>
+                                            <p class="text-sm font-bold text-primary-600">
+                                                Rp
+                                                {product.data.price.toLocaleString(
+                                                    "id-ID",
+                                                )}
+                                            </p>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    </Container>
+                </section>
+            )
+        }
+
+        <!-- Back to shop CTA -->
+        <section class="pb-24">
+            <Container>
+                <div class="text-center border-t border-slate-100 pt-12">
+                    <a
+                        href="/belanja"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition-colors text-sm"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Lihat Semua Produk
+                    </a>
+                </div>
+            </Container>
+        </section>
+
+        <!-- Lightbox -->
+        <div
+            id="lightbox"
+            class="fixed inset-0 bg-black/90 z-50 hidden items-center justify-center p-4 cursor-zoom-out"
+        >
+            <button
+                id="lightbox-close"
+                class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <img
+                id="lightbox-img"
+                src=""
+                alt=""
+                class="max-w-full max-h-[90vh] object-contain rounded-xl"
+            />
+        </div>
+    </section>
+
+    <style>
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+        .animate-fade-in-up {
+            opacity: 0;
+            animation: fade-in-up 0.6s ease-out forwards;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // === Gallery Thumbnails ===
+            const mainImg = document.getElementById(
+                "main-image",
+            ) as HTMLImageElement;
+            const thumbs = document.querySelectorAll(".gallery-thumb");
+
+            thumbs.forEach((thumb) => {
+                thumb.addEventListener("click", () => {
+                    const src = thumb.getAttribute("data-src");
+                    if (src && mainImg) {
+                        mainImg.src = src;
+                        thumbs.forEach((t) =>
+                            t.classList.remove("border-primary-500"),
+                        );
+                        thumb.classList.add("border-primary-500");
+                    }
+                });
+            });
+
+            // === Lightbox ===
+            const lightbox = document.getElementById("lightbox");
+            const lightboxImg = document.getElementById(
+                "lightbox-img",
+            ) as HTMLImageElement;
+            const lightboxClose = document.getElementById("lightbox-close");
+            const mainWrapper = document.getElementById("main-image-wrapper");
+
+            if (mainWrapper && lightbox && lightboxImg) {
+                mainWrapper.addEventListener("click", () => {
+                    lightboxImg.src = mainImg.src;
+                    lightboxImg.alt = mainImg.alt;
+                    lightbox.classList.remove("hidden");
+                    lightbox.classList.add("flex");
+                    document.body.style.overflow = "hidden";
+                });
+
+                const closeLightbox = () => {
+                    lightbox.classList.add("hidden");
+                    lightbox.classList.remove("flex");
+                    document.body.style.overflow = "";
+                };
+
+                lightboxClose?.addEventListener("click", closeLightbox);
+                lightbox.addEventListener("click", (e) => {
+                    if (e.target === lightbox) closeLightbox();
+                });
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === "Escape") closeLightbox();
+                });
+            }
+
+            // === Share Dropdown ===
+            const shareBtn = document.getElementById("share-btn");
+            const shareDropdown = document.getElementById("share-dropdown");
+
+            if (shareBtn && shareDropdown) {
+                shareBtn.addEventListener("click", () => {
+                    shareDropdown.classList.toggle("hidden");
+                });
+
+                // Close on outside click
+                document.addEventListener("click", (e) => {
+                    if (
+                        !shareBtn.contains(e.target as Node) &&
+                        !shareDropdown.contains(e.target as Node)
+                    ) {
+                        shareDropdown.classList.add("hidden");
+                    }
+                });
+            }
+
+            // === Copy Link ===
+            const copyBtn = document.getElementById("copy-link-btn");
+            const copyText = document.getElementById("copy-link-text");
+            if (copyBtn && copyText) {
+                copyBtn.addEventListener("click", () => {
+                    navigator.clipboard
+                        .writeText(window.location.href)
+                        .then(() => {
+                            copyText.textContent = "Tersalin! ✓";
+                            setTimeout(() => {
+                                copyText.textContent = "Salin Link";
+                            }, 2000);
+                        });
+                });
+            }
+        });
+    </script>
+</MainLayout>

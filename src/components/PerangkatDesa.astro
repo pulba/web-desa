@@ -1,0 +1,257 @@
+---
+interface Props {
+  staff: Array<{
+    name: string;
+    position: string;
+    image: string;
+  }>;
+}
+
+const { staff = [] } = Astro.props;
+---
+
+<div class="relative group/sotk max-w-7xl mx-auto overflow-hidden">
+  <!-- Navigation Buttons -->
+  {staff.length > 0 && (
+    <div class="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between pointer-events-none z-30 px-2 lg:-mx-4">
+      <button 
+        id="sotk-prev" 
+        class="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 flex items-center justify-center pointer-events-auto hover:bg-primary-600 dark:hover:bg-primary-500 hover:text-white transition-all text-slate-600 dark:text-slate-300 group"
+        aria-label="Previous Staff"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button 
+        id="sotk-next" 
+        class="w-10 h-10 md:w-12 md:h-12 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-100 dark:border-slate-700 flex items-center justify-center pointer-events-auto hover:bg-primary-600 dark:hover:bg-primary-500 hover:text-white transition-all text-slate-600 dark:text-slate-300 group"
+        aria-label="Next Staff"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  )}
+
+  <!-- Slider Viewport -->
+  <div class="overflow-hidden py-8 px-4">
+    <div id="sotk-track" class="flex transition-transform duration-500 ease-out gap-6" style="transform: translateX(0);">
+      {staff.map((member) => (
+        <div class="sotk-card shrink-0">
+          <div class="group relative bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 p-4 shadow-sm hover:shadow-xl hover:shadow-primary-100/30 dark:hover:shadow-primary-900/40 transition-all duration-500 overflow-hidden h-full">
+            <!-- Image Container -->
+            <div class="aspect-[3/4] rounded-2xl overflow-hidden mb-6 relative bg-slate-100 dark:bg-slate-700">
+              <img 
+                src={member.image || "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=400"} 
+                alt={member.name}
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </div>
+            
+            <!-- Content -->
+            <div class="text-center relative z-10">
+              <div class="inline-block px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-[10px] font-black uppercase tracking-wider rounded-md mb-2 border border-primary-100 dark:border-primary-800">
+                {member.position}
+              </div>
+              <h4 class="text-base font-black text-slate-900 dark:text-white leading-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                {member.name}
+              </h4>
+            </div>
+
+            <!-- Decoration -->
+            <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-primary-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity blur-2xl"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+{!staff.length && (
+  <div class="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 mx-auto max-w-7xl">
+    <p class="text-slate-400 dark:text-slate-500 font-bold">Data Perangkat Desa belum tersedia.</p>
+  </div>
+)}
+
+<style>
+  /* Base width for mobile: 1 card visible */
+  .sotk-card {
+    width: calc(100vw - 3rem); /* Adjusted for padding */
+    max-width: 400px;
+  }
+
+  /* SM: 2 items */
+  @media (min-width: 640px) {
+    .sotk-card {
+      width: calc((100% - 1.5rem) / 2);
+    }
+  }
+
+  /* LG: 3 items */
+  @media (min-width: 1024px) {
+    .sotk-card {
+      width: calc((100% - 3rem) / 3);
+    }
+  }
+
+  /* XL: 4 items (Desktop) */
+  @media (min-width: 1280px) {
+    .sotk-card {
+      width: calc((100% - 4.5rem) / 4);
+    }
+  }
+</style>
+
+<script>
+  function initSotkSlider() {
+    const track = document.getElementById('sotk-track');
+    const prevBtn = document.getElementById('sotk-prev') as HTMLButtonElement | null;
+    const nextBtn = document.getElementById('sotk-next') as HTMLButtonElement | null;
+    
+    // Check for existing clones to avoid duplication on re-init
+    if (!track || track.querySelector('.cloned')) return;
+
+    let originalCards = Array.from(track.children) as HTMLElement[];
+    const originalCount = originalCards.length;
+    if (originalCount === 0) return;
+
+    function getVisibleCards() {
+      if (window.innerWidth >= 1280) return 4;
+      if (window.innerWidth >= 1024) return 3;
+      if (window.innerWidth >= 640) return 2;
+      return 1;
+    }
+
+    const visible = getVisibleCards();
+    
+    // Clone cards for infinite loop
+    // Number of clones should be at least equal to visible cards
+    const cloneCount = Math.max(visible, originalCount);
+    
+    // Clone items from the end and put them at the start
+    for (let i = originalCount - 1; i >= originalCount - cloneCount; i--) {
+      const clone = originalCards[i].cloneNode(true) as HTMLElement;
+      clone.classList.add('cloned');
+      track.insertBefore(clone, track.firstChild);
+    }
+
+    // Clone items from the start and put them at the end
+    for (let i = 0; i < cloneCount; i++) {
+      const clone = originalCards[i].cloneNode(true) as HTMLElement;
+      clone.classList.add('cloned');
+      track.appendChild(clone);
+    }
+
+    const allCards = Array.from(track.children) as HTMLElement[];
+    let currentIndex = cloneCount; // Start at the first original card
+    let isTransitioning = false;
+    const gap = 24; // 1.5rem (gap-6)
+
+    function updateSlider(animate = true) {
+      if (animate) {
+        track!.style.transition = 'transform 500ms ease-out';
+      } else {
+        track!.style.transition = 'none';
+      }
+
+      const cardWidth = originalCards[0].offsetWidth;
+      const offset = currentIndex * (cardWidth + gap);
+      track!.style.transform = `translateX(-${offset}px)`;
+    }
+
+    function handleEnd() {
+      isTransitioning = false;
+      
+      // If we've reached the end clones, jump back to start original
+      if (currentIndex >= originalCount + cloneCount) {
+        currentIndex = cloneCount;
+        updateSlider(false);
+      }
+      
+      // If we've reached the start clones, jump forward to end original
+      if (currentIndex <= cloneCount - visible) {
+         // This jump depends on how many clones we have. 
+         // If we are at index i in clones, we want to jump to originalCount + i
+         if (currentIndex < cloneCount) {
+            // Adjust so if we are at start clones, we jump to corresponding original
+            // e.g. if original is [1,2,3,4,5] and clones are [..., 4,5,1,2,3,4,5,1,2,...]
+            // and we are at the first '4' (cloned), we jump to the middle '4' (original)
+         }
+      }
+
+      // Simpler jump logic for infinite loop: 
+      // If at end: jump to middle
+      // If at start: jump to middle
+      if (currentIndex >= originalCount + cloneCount) {
+        currentIndex = currentIndex - originalCount;
+        updateSlider(false);
+      } else if (currentIndex < cloneCount - (visible - 1)) {
+        // Only jump back if we have scrolled into the clones sufficiently
+      }
+      
+      // Optimized seamless jump:
+      if (currentIndex >= originalCount + cloneCount) {
+        currentIndex = cloneCount;
+        updateSlider(false);
+      } else if (currentIndex < 1) {
+        currentIndex = originalCount;
+        updateSlider(false);
+      }
+    }
+
+    track.addEventListener('transitionend', handleEnd);
+
+    nextBtn?.addEventListener('click', () => {
+      if (isTransitioning) return;
+      isTransitioning = true;
+      currentIndex++;
+      updateSlider();
+    });
+
+    prevBtn?.addEventListener('click', () => {
+      if (isTransitioning) return;
+      isTransitioning = true;
+      currentIndex--;
+      updateSlider();
+    });
+
+    // Auto-play
+    let autoPlayInterval = setInterval(() => {
+      if (!isTransitioning) {
+        isTransitioning = true;
+        currentIndex++;
+        updateSlider();
+      }
+    }, 5000);
+
+    // Pause auto-play on hover
+    track.parentElement?.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
+    track.parentElement?.addEventListener('mouseleave', () => {
+      autoPlayInterval = setInterval(() => {
+        if (!isTransitioning) {
+          isTransitioning = true;
+          currentIndex++;
+          updateSlider();
+        }
+      }, 5000);
+    });
+
+    // Handle Resize
+    window.addEventListener('resize', () => {
+      setTimeout(() => {
+        updateSlider(false);
+      }, 100);
+    });
+    
+    // Initial position
+    updateSlider(false);
+  }
+
+  // Initialize
+  initSotkSlider();
+  document.addEventListener('astro:after-swap', initSotkSlider);
+</script>

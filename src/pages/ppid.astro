@@ -1,0 +1,169 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Container from "../components/Container.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+
+import { getEntry } from "astro:content";
+
+// Ambil data CMS untuk pengaturan global dan PPID
+const settingsEntry = await getEntry("settings", "main");
+const theme = settingsEntry?.data?.theme || { primaryColor: "#417505" };
+
+const ppidEntry = await getEntry("ppid", "main");
+const ppidData = ppidEntry?.data || {
+    title: "PPID Desa Makmur",
+    description:
+        "Pejabat Pengelola Informasi dan Dokumentasi (PPID) menjamin keterbukaan informasi publik sesuai amanat undang-undang nomor 14 tahun 2008.",
+    categories: [],
+};
+---
+
+<MainLayout title="PPID Desa">
+    <section class="bg-white pt-24 pb-20 relative overflow-hidden">
+        <Container className="relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6 text-slate-800 text-center lg:text-left">
+                    <h1
+                        class="text-5xl md:text-7xl font-bold mb-6 tracking-tight text-primary-500"
+                    >
+                        {ppidData.title}
+                    </h1>
+                    <p
+                        class="text-slate-600 text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium"
+                    >
+                        {ppidData.description}
+                    </p>
+                    {
+                        ppidData.buttonLabel && (
+                            <div class="pt-4">
+                                <a
+                                    href={ppidData.buttonLink || "#"}
+                                    class="inline-block px-8 py-3 w-auto bg-transparent border-2 border-slate-200 text-slate-800 font-bold rounded hover:border-primary-500 hover:text-primary-600 transition-all text-sm tracking-wide"
+                                >
+                                    {ppidData.buttonLabel}
+                                </a>
+                            </div>
+                        )
+                    }
+                </div>
+
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 lg:mt-0"
+                >
+                    {
+                        (ppidData.categories || []).map((cat: any) => {
+                            const slugify = (text: string) => {
+                                return text
+                                    .toString()
+                                    .toLowerCase()
+                                    .trim()
+                                    .replace(/\s+/g, "-")
+                                    .replace(/[^\w-]+/g, "")
+                                    .replace(/--+/g, "-");
+                            };
+                            const slug = slugify(cat.title);
+
+                            return (
+                                <a
+                                    href={`/ppid/${slug}`}
+                                    class="bg-white rounded-xl p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-slate-50 flex flex-col items-center text-center space-y-4 hover:-translate-y-1 hover:shadow-lg transition-all"
+                                >
+                                    <div class="w-20 h-20 flex items-center justify-center">
+                                        {cat.title
+                                            .toLowerCase()
+                                            .includes("berkala") && (
+                                            <div class="p-4 bg-blue-50 rounded-2xl text-blue-600">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-10 w-10"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        {cat.title
+                                            .toLowerCase()
+                                            .includes("serta merta") && (
+                                            <div class="p-4 bg-amber-50 rounded-2xl text-amber-600">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-10 w-10"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        {cat.title
+                                            .toLowerCase()
+                                            .includes("setiap saat") && (
+                                            <div class="p-4 bg-emerald-50 rounded-2xl text-emerald-600">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-10 w-10"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        {!cat.title
+                                            .toLowerCase()
+                                            .includes("berkala") &&
+                                            !cat.title
+                                                .toLowerCase()
+                                                .includes("serta merta") &&
+                                            !cat.title
+                                                .toLowerCase()
+                                                .includes("setiap saat") && (
+                                                <div class="p-4 bg-primary-50 rounded-2xl text-primary-600">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        class="w-12 h-12"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fill-rule="evenodd"
+                                                            d="M2 6a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1H8a3 3 0 00-3 3v1.5a1.5 1.5 0 01-3 0V6z"
+                                                            clip-rule="evenodd"
+                                                        />
+                                                        <path d="M6 12a2 2 0 012-2h8a2 2 0 012 2v2a2 2 0 01-2 2H2h2a2 2 0 002-2v-2z" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                    </div>
+                                    <h3 class="text-slate-500 font-bold text-xs uppercase tracking-wider leading-relaxed">
+                                        {cat.title}
+                                    </h3>
+                                </a>
+                            );
+                        })
+                    }
+                </div>
+            </div>
+        </Container>
+    </section>
+</MainLayout>

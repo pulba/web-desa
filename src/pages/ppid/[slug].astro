@@ -1,0 +1,284 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Container from "../../components/Container.astro";
+import { getEntry } from "astro:content";
+
+export async function getStaticPaths() {
+    const ppidEntry = await getEntry("ppid", "main");
+    const ppidData = ppidEntry?.data || { categories: [] };
+
+    const slugify = (text: string) => {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, "-") // Replace spaces with -
+            .replace(/[^\w-]+/g, "") // Remove all non-word chars
+            .replace(/--+/g, "-"); // Replace multiple - with single -
+    };
+
+    return (ppidData.categories || []).map((cat: any) => ({
+        params: { slug: slugify(cat.title) },
+        props: { category: cat, ppidData },
+    }));
+}
+
+const { category, ppidData } = Astro.props;
+const { slug } = Astro.params;
+
+// SEO Title
+const title = `${category.title} | PPID Desa Makmur`;
+---
+
+<MainLayout title={title}>
+    <section class="py-20 bg-white min-h-screen">
+        <Container>
+            <div class="max-w-5xl mx-auto space-y-16">
+                <!-- Back Link -->
+                <a
+                    href="/ppid"
+                    class="inline-flex items-center text-slate-400 hover:text-primary-600 font-bold transition-colors group"
+                >
+                    <div
+                        class="p-2 bg-slate-50 rounded-lg group-hover:bg-primary-50 mr-3 transition-colors"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    Kembali ke Layanan PPID
+                </a>
+
+                <!-- Hero Section -->
+                <div class="space-y-4">
+                    <h1
+                        class="text-4xl md:text-6xl font-black text-primary-500 tracking-tight leading-tight"
+                    >
+                        {category.title}
+                    </h1>
+                    {
+                        category.description && (
+                            <p class="text-slate-700 text-lg md:text-xl font-medium max-w-3xl">
+                                {category.description}
+                            </p>
+                        )
+                    }
+                </div>
+
+                <!-- Document Groups (Accordions) -->
+                <div class="space-y-4">
+                    {
+                        (category.groups || []).map((group: any) => (
+                            <details class="bg-white rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] group/accordion overflow-hidden [&[open]]:shadow-lg transition-all duration-300">
+                                <summary class="flex items-center justify-between p-6 md:p-8 cursor-pointer list-none hover:bg-slate-50/50 transition-colors">
+                                    <h3 class="text-xl md:text-2xl font-bold text-slate-800 leading-snug pr-8">
+                                        {group.title}
+                                    </h3>
+                                    <div class="flex-shrink-0 text-slate-400 group-open/accordion:rotate-180 transition-transform duration-300">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-6 w-6"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M19 9l-7 7-7-7"
+                                            />
+                                        </svg>
+                                    </div>
+                                </summary>
+
+                                <div class="p-6 md:p-8 pt-0 overflow-x-auto">
+                                    {group.documents &&
+                                    group.documents.length > 0 ? (
+                                        <table class="w-full text-left">
+                                            <thead>
+                                                <tr class="text-slate-800 font-black text-lg border-b border-slate-100">
+                                                    <th class="py-4 pr-6 w-16">
+                                                        No
+                                                    </th>
+                                                    <th class="py-4 pr-6">
+                                                        Judul
+                                                    </th>
+                                                    <th class="py-4 pr-6">
+                                                        Tanggal
+                                                    </th>
+                                                    <th class="py-4 text-right">
+                                                        Aksi
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-50">
+                                                {group.documents.map(
+                                                    (
+                                                        doc: any,
+                                                        index: number,
+                                                    ) => (
+                                                        <tr class="group/row hover:bg-slate-50/30 transition-colors">
+                                                            <td class="py-6 pr-6 text-slate-500 font-medium">
+                                                                {index + 1}
+                                                            </td>
+                                                            <td class="py-6 pr-6">
+                                                                <div class="font-bold text-slate-800 uppercase leading-snug">
+                                                                    {doc.title}
+                                                                </div>
+                                                            </td>
+                                                            <td class="py-6 pr-6 text-slate-600 font-medium italic">
+                                                                {doc.date ||
+                                                                    "-"}
+                                                            </td>
+                                                            <td class="py-6 text-right whitespace-nowrap space-y-2 md:space-y-0 md:space-x-3">
+                                                                {doc.file && (
+                                                                    <>
+                                                                        <a
+                                                                            href={
+                                                                                doc.file
+                                                                            }
+                                                                            target="_blank"
+                                                                            class="inline-flex items-center px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 font-bold text-sm hover:border-primary-500 hover:text-primary-600 shadow-sm transition-all"
+                                                                        >
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                class="h-4 w-4 mr-2"
+                                                                                viewBox="0 0 20 20"
+                                                                                fill="currentColor"
+                                                                            >
+                                                                                <path
+                                                                                    fill-rule="evenodd"
+                                                                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                                                                                    clip-rule="evenodd"
+                                                                                />
+                                                                            </svg>
+                                                                            Lihat
+                                                                            Berkas
+                                                                        </a>
+                                                                        <a
+                                                                            href={
+                                                                                doc.file
+                                                                            }
+                                                                            download
+                                                                            class="inline-flex items-center px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 font-bold text-sm hover:border-primary-500 hover:text-primary-600 shadow-sm transition-all"
+                                                                        >
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                class="h-4 w-4 mr-2"
+                                                                                fill="none"
+                                                                                viewBox="0 0 24 24"
+                                                                                stroke="currentColor"
+                                                                            >
+                                                                                <path
+                                                                                    stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                    stroke-width="2"
+                                                                                    d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                                                />
+                                                                            </svg>
+                                                                            Unduh
+                                                                        </a>
+                                                                    </>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    ) : (
+                                        <div class="py-12 flex flex-col items-center text-center space-y-4">
+                                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-8 w-8"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <p class="text-slate-400 font-medium italic">
+                                                Berkas belum tersedia dalam grup
+                                                ini.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </details>
+                        ))
+                    }
+
+                    {
+                        (category.groups || []).length === 0 && (
+                            <div class="py-24 text-center">
+                                <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-12 w-12"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                                        />
+                                    </svg>
+                                </div>
+                                <h4 class="text-xl font-bold text-slate-800 mb-2">
+                                    Belum ada dokumen
+                                </h4>
+                                <p class="text-slate-500 font-medium max-w-md mx-auto">
+                                    Pemerintah desa sedang dalam proses
+                                    digitalisasi dan pengunggahan dokumen untuk
+                                    kategori ini.
+                                </p>
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+        </Container>
+    </section>
+</MainLayout>
+
+<style>
+    /* Custom scrollbar for table container */
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 6px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    /* Summary list numbering fix for some browsers */
+    summary::-webkit-details-marker {
+        display: none;
+    }
+</style>

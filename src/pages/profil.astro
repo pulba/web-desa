@@ -1,0 +1,262 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Container from "../components/Container.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+import PerangkatDesa from "../components/PerangkatDesa.astro";
+import { getEntry } from "astro:content";
+
+const settingsEntry = await getEntry("settings", "main");
+const settings = settingsEntry?.data;
+
+const profilEntry = await getEntry("profil", "main");
+const profilData = profilEntry?.data;
+
+const dusunList = profilData?.wilayah || [];
+---
+
+<MainLayout title="Profil Desa">
+    <section class="relative py-24 bg-primary-900 overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <img
+                src={profilData?.hero?.image ||
+                    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1600"}
+                class="w-full h-full aspect-video object-cover"
+            />
+        </div>
+        <Container className="relative z-10 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                {profilData?.hero?.title || "Profil Desa"}
+            </h1>
+            <p class="text-primary-100 text-lg max-w-2xl mx-auto">
+                {
+                    profilData?.hero?.subtitle ||
+                        "Mengenal lebih dekat sejarah, visi misi, dan struktur pemerintahan Desa Makmur."
+                }
+            </p>
+        </Container>
+    </section>
+
+    <section class="section-padding">
+        <Container>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                <!-- Content Column -->
+                <div class="lg:col-span-2 space-y-16">
+                    <!-- Sejarah -->
+                    <div id="sejarah" class="scroll-mt-32">
+                        <SectionTitle title="Sejarah Desa" />
+                        <div
+                            class="prose prose-slate max-w-none text-slate-600 leading-relaxed space-y-4 whitespace-pre-wrap"
+                        >
+                            {profilData?.sejarah}
+                        </div>
+                    </div>
+
+                    <!-- Visi Misi -->
+                    <div
+                        id="visi-misi"
+                        class="scroll-mt-32 bg-slate-50 p-8 md:p-12 rounded-3xl border border-slate-100"
+                    >
+                        <SectionTitle title="Visi & Misi" />
+                        <div class="space-y-8">
+                            <div>
+                                <h3
+                                    class="text-xl font-bold text-primary-700 mb-4 flex items-center"
+                                >
+                                    <span
+                                        class="w-8 h-8 bg-primary-600 text-white rounded-lg flex items-center justify-center mr-3 text-sm italic font-serif"
+                                        >V</span
+                                    >
+                                    Visi Desa Makmur
+                                </h3>
+                                <p
+                                    class="text-lg font-medium text-slate-800 italic leading-relaxed"
+                                >
+                                    "{profilData?.visiMisi?.visi}"
+                                </p>
+                            </div>
+                            <div class="h-px bg-slate-200 w-full"></div>
+                            <div>
+                                <h3
+                                    class="text-xl font-bold text-primary-700 mb-4 flex items-center"
+                                >
+                                    <span
+                                        class="w-8 h-8 bg-primary-600 text-white rounded-lg flex items-center justify-center mr-3 text-sm italic font-serif"
+                                        >M</span
+                                    >
+                                    Misi Desa Makmur
+                                </h3>
+                                <ul class="space-y-4">
+                                    {
+                                        profilData?.visiMisi?.misi.map(
+                                            (misi, i) => (
+                                                <li class="flex items-start space-x-3 text-slate-600">
+                                                    <span class="font-bold text-primary-600 shrink-0">
+                                                        {i + 1}.
+                                                    </span>
+                                                    <span>{misi}</span>
+                                                </li>
+                                            ),
+                                        )
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="struktur" class="scroll-mt-32 text-center">
+                        <SectionTitle
+                            title="Struktur Organisasi"
+                            align="center"
+                        />
+
+                        <div class="mb-16">
+                            <PerangkatDesa staff={profilData?.perangkat} />
+                        </div>
+
+                        <div
+                            class="relative bg-white border border-slate-100 p-4 rounded-3xl shadow-sm overflow-hidden min-h-[400px] flex items-center justify-center"
+                        >
+                            {
+                                profilData?.organisasiImage ? (
+                                    <div class="w-full h-full rounded-2xl overflow-hidden group">
+                                        <div class="absolute inset-x-0 top-6 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span class="px-4 py-2 bg-slate-900/80 text-white text-xs font-bold rounded-full backdrop-blur-sm">
+                                                Bagan SOTK Formal
+                                            </span>
+                                        </div>
+                                        <img
+                                            src={profilData.organisasiImage}
+                                            alt="Struktur Organisasi Desa"
+                                            class="w-full h-auto aspect-video object-cover"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div class="text-slate-400 space-y-4">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-16 w-16 mx-auto mb-4 opacity-20"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                            />
+                                        </svg>
+                                        <p>
+                                            Bagan Struktur Organisasi Desa Belum
+                                            Tersedia
+                                        </p>
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar / Right Column -->
+                <div class="space-y-12">
+                    <!-- Daftar Dusun -->
+                    <div
+                        class="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm"
+                    >
+                        <h3 class="text-xl font-bold text-slate-900 mb-6">
+                            Pembagian Wilayah
+                        </h3>
+                        <div class="space-y-4">
+                            {
+                                dusunList.map((dusun) => (
+                                    <div class="p-4 bg-slate-50 rounded-xl hover:bg-primary-50 transition-colors group">
+                                        <h4 class="font-bold text-slate-800 group-hover:text-primary-600">
+                                            {dusun.name}
+                                        </h4>
+                                        <div class="flex justify-between text-xs text-slate-500 mt-2">
+                                            <span>Kepala: {dusun.kepala}</span>
+                                            <span>{dusun.penduduk}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Maps -->
+                    <div
+                        class="bg-white border border-slate-100 rounded-3xl p-4 shadow-sm"
+                    >
+                        <h3
+                            class="text-xl font-bold text-slate-900 mb-4 px-4 pt-4"
+                        >
+                            Peta Lokasi
+                        </h3>
+                        <div
+                            class="aspect-square bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden"
+                        >
+                            {
+                                settings?.googleMapsUrl ? (
+                                    <div class="relative w-full h-full group">
+                                        <iframe
+                                            src={settings.googleMapsUrl}
+                                            title="Peta Lokasi Desa"
+                                            class="w-full h-full border-0 lg:rounded-2xl"
+                                            allowfullscreen
+                                            loading="lazy"
+                                            referrerpolicy="no-referrer-when-downgrade"
+                                        />
+                                        <div class="absolute bottom-4 right-4 transition-opacity opacity-0 group-hover:opacity-100">
+                                            <a
+                                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings?.address || settings?.siteName || "Desa Makmur")}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="px-4 py-2 bg-white/90 backdrop-blur shadow-sm rounded-lg text-xs font-bold text-slate-700 hover:bg-white transition-colors flex items-center gap-2"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-4 w-4 text-primary-600"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                                    />
+                                                </svg>
+                                                Lihat di Google Maps
+                                            </a>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div class="text-slate-400 text-center p-8">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-12 w-12 mx-auto mb-2 opacity-20"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                            />
+                                        </svg>
+                                        <p class="text-sm font-medium">
+                                            Peta Lokasi Belum Tersedia
+                                        </p>
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Container>
+    </section>
+</MainLayout>

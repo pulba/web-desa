@@ -1,0 +1,36 @@
+{
+    "penerima": [
+        {
+            "nik": "3201123456780002",
+            "nama": "Siti Aminah",
+            "alamat": "Dusun Sukamaju",
+            "program": [
+                {
+                    "namaProgram": "Program Keluarga Harapan (PKH)",
+                    "kategori": "Uang Tunai",
+                    "status": "Penerima Aktif",
+                    "keterangan": "Bantuan tunai bersyarat untuk keluarga kurang mampu. Jadwal pencairan tahap selanjutnya pada BPP minggu pertama bulan depan."
+                },
+                {
+                    "namaProgram": "Bantuan Pangan Non Tunai (BPNT)",
+                    "kategori": "Bahan Pokok",
+                    "status": "Tidak Terdaftar",
+                    "keterangan": "Data NIK ini tidak masuk dalam kuota penerima BPNT tahun berjalan berdasarkan padanan DTKS."
+                }
+            ]
+        },
+        {
+            "nik": "3201876543210004",
+            "nama": "Budi Santoso",
+            "alamat": "Dusun Mekar Jaya",
+            "program": [
+                {
+                    "namaProgram": "Bantuan Langsung Tunai Dana Desa (BLT DD)",
+                    "kategori": "Uang Tunai",
+                    "status": "Dalam Proses",
+                    "keterangan": "Sedang dalam tahap verifikasi faktual tingkat desa."
+                }
+            ]
+        }
+    ]
+}

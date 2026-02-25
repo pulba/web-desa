@@ -1,0 +1,397 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Container from "../../components/Container.astro";
+import SectionTitle from "../../components/SectionTitle.astro";
+import CardBerita from "../../components/CardBerita.astro";
+import BeritaSidebar from "../../components/BeritaSidebar.astro";
+import { getCollection, getEntry } from "astro:content";
+import { SOCIAL_ICON_REGISTRY } from "../../config/socialIcons";
+
+export async function getStaticPaths() {
+    const beritaEntries = await getCollection("berita");
+    const visibleBerita = beritaEntries.filter((berita) => {
+        const data = berita.data as any;
+        const isPublished = data.status === "Published";
+        const isScheduledVisible =
+            data.status === "Scheduled" && new Date(data.date) <= new Date();
+        return isPublished || isScheduledVisible;
+    });
+
+    return visibleBerita.map((entry) => ({
+        params: { slug: entry.slug },
+        props: { entry },
+    }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await entry.render();
+
+const allBerita = await getCollection("berita");
+const publishedBerita = allBerita.filter((berita) => {
+    const data = berita.data as any;
+    const isPublished = data.status === "Published";
+    const isScheduledVisible =
+        data.status === "Scheduled" && new Date(data.date) <= new Date();
+    return isPublished || isScheduledVisible;
+});
+const otherBerita = publishedBerita
+    .filter((b) => b.slug !== entry.slug)
+    .slice(0, 3);
+
+const formattedDate = new Date(entry.data.date).toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+});
+
+// Fetch Author Data
+const allAuthors = await getCollection("authors");
+let authorData = null;
+let authorName = "Admin";
+let authorSlug = null;
+let authorRole = "Kontributor Desa";
+let authorAvatar = null;
+
+if (entry.data.author) {
+    const authorPath = entry.data.author;
+    // Extract ID/Slug from path: "src/content/authors/Admin-Desa.md" -> "Admin-Desa"
+    const rawId = (authorPath.split("/").pop() || "")
+        .replace(".md", "")
+        .replace(".mdx", "");
+
+    // Try to find valid author object
+    authorData = allAuthors.find(
+        (a) =>
+            a.slug === rawId ||
+            a.slug.toLowerCase() === rawId.toLowerCase() ||
+            a.id === rawId,
+    );
+
+    if (authorData) {
+        authorName = authorData.data.name;
+        authorSlug = authorData.slug;
+        authorRole = authorData.data.role || "Kontributor Desa";
+        authorAvatar = authorData.data.avatar;
+    } else {
+        // Fallback if author file missing but we have the ID
+        authorName = rawId.replace(/-/g, " ");
+        authorSlug = rawId; // Assume slug matches ID
+    }
+}
+---
+
+<MainLayout
+    title={entry.data.title}
+    description={entry.data.excerpt || entry.data.title}
+    image={entry.data.image}
+    type="article"
+>
+    <article class="pt-32 pb-24">
+        <!-- Header Post -->
+        <Container className="mb-12">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="flex justify-center items-center space-x-3 mb-6">
+                    <span
+                        class="px-3 py-1 bg-primary-100 text-primary-700 text-xs font-bold rounded-full uppercase tracking-wider"
+                    >
+                        {entry.data.category}
+                    </span>
+                    <span class="text-slate-400 text-sm font-medium">
+                        {formattedDate}
+                    </span>
+                </div>
+                <h1
+                    class="text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-8"
+                >
+                    {entry.data.title}
+                </h1>
+                <div class="flex items-center justify-center space-x-4">
+                    {
+                        authorSlug ? (
+                            <a
+                                href={`/berita/penulis/${authorSlug}`}
+                                class="group flex items-center space-x-4 hover:opacity-80 transition-opacity"
+                            >
+                                <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-200">
+                                    {authorAvatar ? (
+                                        <img
+                                            src={authorAvatar}
+                                            alt={authorName}
+                                            class="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div class="w-full h-full flex items-center justify-center text-slate-600 font-bold">
+                                            {authorName[0]}
+                                        </div>
+                                    )}
+                                </div>
+                                <div class="text-left">
+                                    <p class="font-bold text-slate-900 leading-none group-hover:text-primary-600 transition-colors">
+                                        {authorName}
+                                    </p>
+                                    <p class="text-xs text-slate-500">
+                                        {authorRole}
+                                    </p>
+                                </div>
+                            </a>
+                        ) : (
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 font-bold">
+                                    {authorName[0]}
+                                </div>
+                                <div class="text-left">
+                                    <p class="font-bold text-slate-900 leading-none">
+                                        {authorName}
+                                    </p>
+                                    <p class="text-xs text-slate-500">
+                                        {authorRole}
+                                    </p>
+                                </div>
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+        </Container>
+
+        <!-- Thumbnail -->
+        <div class="max-w-6xl mx-auto px-4 mb-16">
+            <div
+                class="aspect-video relative rounded-3xl overflow-hidden shadow-2xl"
+            >
+                <img
+                    src={entry.data.image}
+                    alt={entry.data.title}
+                    class="w-full h-full object-cover"
+                />
+            </div>
+        </div>
+
+        <!-- Content & Sidebar -->
+        <Container>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <!-- Main Content -->
+                <div class="lg:col-span-2">
+                    <div
+                        class="prose prose-slate prose-lg lg:prose-xl prose-primary"
+                    >
+                        {/* Table of Contents */}
+                        {
+                            headings.length > 0 && (
+                                <div class="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100">
+                                    <h3 class="text-lg font-bold text-slate-900 mb-3">
+                                        Daftar Isi
+                                    </h3>
+                                    <ul class="space-y-2">
+                                        {headings.map((heading) => (
+                                            <li
+                                                class={`text-slate-600 hover:text-primary-600 transition-colors ${heading.depth === 3 ? "ml-4" : ""}`}
+                                            >
+                                                <a href={`#${heading.slug}`}>
+                                                    # {heading.text}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )
+                        }
+
+                        <div
+                            id="article-content"
+                            class="text-slate-800 leading-relaxed space-y-6"
+                        >
+                            <Content />
+                        </div>
+
+                        <!-- Data for Recommended News Injection -->
+                        <div id="recommended-data" class="hidden">
+                            {
+                                JSON.stringify(
+                                    otherBerita.slice(0, 2).map((b) => ({
+                                        title: b.data.title,
+                                        slug: b.slug,
+                                        category: b.data.category,
+                                    })),
+                                )
+                            }
+                        </div>
+
+                        <script is:inline>
+                            document.addEventListener(
+                                "DOMContentLoaded",
+                                () => {
+                                    const content =
+                                        document.getElementById(
+                                            "article-content",
+                                        );
+                                    const dataDiv =
+                                        document.getElementById(
+                                            "recommended-data",
+                                        );
+
+                                    if (!content || !dataDiv) return;
+
+                                    const recommendations = JSON.parse(
+                                        dataDiv.textContent,
+                                    );
+                                    if (recommendations.length === 0) return;
+
+                                    // Create Recommendation Element
+                                    const recContainer =
+                                        document.createElement("div");
+                                    recContainer.className =
+                                        "my-8 p-6 bg-primary-50 border-l-4 border-primary-500 rounded-r-xl not-prose";
+
+                                    let linksHtml = recommendations
+                                        .map(
+                                            (rec) => `
+                                    <li>
+                                        <a href="/berita/${rec.slug}" class="text-primary-700 font-bold hover:underline">
+                                            ${rec.title}
+                                        </a>
+                                    </li>
+                                `,
+                                        )
+                                        .join("");
+
+                                    recContainer.innerHTML = `
+                                    <h4 class="text-sm uppercase tracking-wider text-slate-500 font-bold mb-2">Baca Juga:</h4>
+                                    <ul class="space-y-2 list-none m-0 p-0">
+                                        ${linksHtml}
+                                    </ul>
+                                `;
+
+                                    // Inject after 2nd paragraph
+                                    const paragraphs =
+                                        content.querySelectorAll("p");
+                                    if (paragraphs.length >= 2) {
+                                        paragraphs[1].insertAdjacentElement(
+                                            "afterend",
+                                            recContainer,
+                                        );
+                                    } else if (paragraphs.length > 0) {
+                                        paragraphs[0].insertAdjacentElement(
+                                            "afterend",
+                                            recContainer,
+                                        );
+                                    } else {
+                                        content.prepend(recContainer);
+                                    }
+                                },
+                            );
+                        </script>
+
+                        <!-- Share & Tag -->
+                        <div
+                            class="mt-16 pt-8 border-t border-slate-100 flex flex-wrap items-center justify-between gap-6"
+                        >
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm font-bold text-slate-900"
+                                    >Tags:</span
+                                >
+                                {
+                                    entry.data.tags &&
+                                    entry.data.tags.length > 0 ? (
+                                        entry.data.tags.map((tag) => (
+                                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">
+                                                #{tag}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span class="text-xs text-slate-400 italic">
+                                            Tidak ada tags
+                                        </span>
+                                    )
+                                }
+                            </div>
+                            <div class="flex space-x-4">
+                                <!-- WhatsApp -->
+                                <a
+                                    href={`https://wa.me/?text=${encodeURIComponent(entry.data.title + " " + Astro.url.href)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm hover:shadow-md"
+                                    title="Share to WhatsApp"
+                                    set:html={SOCIAL_ICON_REGISTRY.whatsapp.svg}
+                                />
+
+                                <!-- Facebook -->
+                                <a
+                                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm hover:shadow-md"
+                                    title="Share to Facebook"
+                                    set:html={SOCIAL_ICON_REGISTRY.facebook.svg}
+                                />
+
+                                <!-- Twitter / X -->
+                                <a
+                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(entry.data.title)}&url=${encodeURIComponent(Astro.url.href)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-black hover:text-white transition-all shadow-sm hover:shadow-md"
+                                    title="Share to Twitter"
+                                    set:html={SOCIAL_ICON_REGISTRY.twitter.svg}
+                                />
+
+                                <!-- Telegram -->
+                                <a
+                                    href={`https://t.me/share/url?url=${encodeURIComponent(Astro.url.href)}&text=${encodeURIComponent(entry.data.title)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center text-sky-600 hover:bg-sky-500 hover:text-white transition-all shadow-sm hover:shadow-md"
+                                    title="Share to Telegram"
+                                    set:html={SOCIAL_ICON_REGISTRY.telegram.svg}
+                                />
+
+                                <!-- LinkedIn -->
+                                <a
+                                    href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(Astro.url.href)}&title=${encodeURIComponent(entry.data.title)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm hover:shadow-md"
+                                    title="Share to LinkedIn"
+                                    set:html={SOCIAL_ICON_REGISTRY.linkedin.svg}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="sticky top-24">
+                        <BeritaSidebar />
+                    </div>
+                </div>
+            </div>
+        </Container>
+    </article>
+
+    <!-- Related Posts -->
+    <section class="section-padding bg-slate-50">
+        <Container>
+            <SectionTitle
+                title="Berita Lainnya"
+                align="left"
+                className="mb-8"
+            />
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {
+                    otherBerita.map((b) => (
+                        <CardBerita
+                            title={b.data.title}
+                            excerpt={b.data.excerpt || ""}
+                            date={b.data.date.toString()}
+                            image={b.data.image || ""}
+                            category={b.data.category || "Uncategorized"}
+                            slug={b.slug}
+                        />
+                    ))
+                }
+            </div>
+        </Container>
+    </section>
+</MainLayout>

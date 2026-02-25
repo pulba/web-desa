@@ -1,0 +1,282 @@
+---
+import Button from "./Button.astro";
+import Container from "./Container.astro";
+
+interface Props {
+  slides?: {
+    title: string;
+    subtitle: string;
+    image: string;
+    ctaLabel?: string;
+    ctaLink?: string;
+  }[];
+}
+
+const { slides = [] } = Astro.props;
+---
+
+<section
+  class="relative h-[600px] md:h-[700px] w-full overflow-hidden select-none"
+  id="hero-slider"
+>
+  <!-- Slides Stack (absolute positioned, faded in/out) -->
+  {
+    slides.map((slide, i) => (
+      <div
+        class={`slider-slide absolute inset-0 transition-opacity duration-700 ${i === 0 ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+        data-index={i}
+      >
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30 z-10" />
+        <img
+          src={slide.image}
+          alt={slide.title}
+          class="w-full h-full object-cover pointer-events-none"
+          draggable={false}
+        />
+        <div class="absolute inset-0 z-20 flex items-center justify-center p-4">
+          <Container>
+            <div class="max-w-3xl text-white text-center mx-auto">
+              <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 drop-shadow-lg">
+                {slide.title}
+              </h1>
+              <p class="text-base md:text-lg lg:text-xl text-slate-200 mb-6 md:mb-8 font-medium drop-shadow-md">
+                {slide.subtitle}
+              </p>
+              <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <Button
+                  href={slide.ctaLink || "#"}
+                  size="lg"
+                  className="w-full sm:w-auto shadow-lg"
+                >
+                  {slide.ctaLabel || "Lihat Detail"}
+                </Button>
+                <Button
+                  href="/kontak"
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm shadow-lg"
+                >
+                  Hubungi Kami
+                </Button>
+              </div>
+            </div>
+          </Container>
+        </div>
+      </div>
+    ))
+  }
+
+  <!-- Previous / Next Arrows -->
+  <button
+    id="slider-prev"
+    class="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all backdrop-blur-sm"
+    aria-label="Previous slide"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M15 19l-7-7 7-7"></path>
+    </svg>
+  </button>
+  <button
+    id="slider-next"
+    class="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all backdrop-blur-sm"
+    aria-label="Next slide"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 5l7 7-7 7"></path>
+    </svg>
+  </button>
+
+  <!-- Navigation Dots -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex space-x-3">
+    {
+      slides.map((_, i) => (
+        <button
+          class={`slider-dot w-3 h-3 rounded-full border border-white/70 transition-all ${i === 0 ? "bg-white scale-125" : "bg-white/30"}`}
+          data-index={i}
+          aria-label={`Go to slide ${i + 1}`}
+        />
+      ))
+    }
+  </div>
+
+  <!-- Progress Bar -->
+  <div
+    class="absolute bottom-0 left-0 h-1 bg-primary-500 z-30"
+    id="slider-progress"
+    style="width: 0%; transition: width 5s linear;"
+  >
+  </div>
+</section>
+
+<script>
+  function initSlider() {
+    const section = document.getElementById("hero-slider");
+    if (!section || section.dataset.sliderReady === "true") return;
+    section.dataset.sliderReady = "true";
+
+    const slides = Array.from(
+      section.querySelectorAll<HTMLElement>(".slider-slide"),
+    );
+    const dots = Array.from(
+      section.querySelectorAll<HTMLElement>(".slider-dot"),
+    );
+    const prevBtn = document.getElementById("slider-prev");
+    const nextBtn = document.getElementById("slider-next");
+    const progressBar = document.getElementById(
+      "slider-progress",
+    ) as HTMLElement;
+
+    const total = slides.length;
+    if (total === 0) return;
+
+    let current = 0;
+    let autoTimer: ReturnType<typeof setInterval> | null = null;
+
+    // --- Swipe/Drag state ---
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let dragging = false;
+
+    function goTo(index: number) {
+      // Wrap around for infinite loop
+      const next = ((index % total) + total) % total;
+      slides[current].classList.replace("opacity-100", "opacity-0");
+      slides[current].classList.replace("z-10", "z-0");
+      dots[current]?.classList.remove("bg-white", "scale-125");
+      dots[current]?.classList.add("bg-white/30");
+
+      current = next;
+      slides[current].classList.replace("opacity-0", "opacity-100");
+      slides[current].classList.replace("z-0", "z-10");
+      dots[current]?.classList.add("bg-white", "scale-125");
+      dots[current]?.classList.remove("bg-white/30");
+
+      resetProgress();
+    }
+
+    function resetProgress() {
+      if (!progressBar) return;
+      progressBar.style.transition = "none";
+      progressBar.style.width = "0%";
+      // Force reflow then animate
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          progressBar.style.transition = "width 5s linear";
+          progressBar.style.width = "100%";
+        });
+      });
+    }
+
+    function startAuto() {
+      stopAuto();
+      autoTimer = setInterval(() => goTo(current + 1), 5000);
+      resetProgress();
+    }
+
+    function stopAuto() {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      }
+      if (progressBar) {
+        progressBar.style.transition = "none";
+        progressBar.style.width = "0%";
+      }
+    }
+
+    // Arrow buttons
+    prevBtn?.addEventListener("click", () => {
+      stopAuto();
+      goTo(current - 1);
+      startAuto();
+    });
+    nextBtn?.addEventListener("click", () => {
+      stopAuto();
+      goTo(current + 1);
+      startAuto();
+    });
+
+    // Dot buttons
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        const idx = parseInt(dot.dataset.index || "0");
+        stopAuto();
+        goTo(idx);
+        startAuto();
+      });
+    });
+
+    // Touch/Mouse Swipe
+    section.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.touches[0].clientX;
+      },
+      { passive: true },
+    );
+    section.addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].clientX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        stopAuto();
+        goTo(diff > 0 ? current + 1 : current - 1);
+        startAuto();
+      }
+    });
+    section.addEventListener("mousedown", (e) => {
+      dragging = true;
+      touchStartX = e.clientX;
+      section.style.cursor = "grabbing";
+    });
+    section.addEventListener("mouseup", (e) => {
+      if (!dragging) return;
+      dragging = false;
+      section.style.cursor = "grab";
+      touchEndX = e.clientX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        stopAuto();
+        goTo(diff > 0 ? current + 1 : current - 1);
+        startAuto();
+      }
+    });
+    section.addEventListener("mouseleave", () => {
+      dragging = false;
+      section.style.cursor = "grab";
+    });
+
+    section.style.cursor = "grab";
+
+    // Init
+    goTo(0);
+    startAuto();
+  }
+
+  initSlider();
+  document.addEventListener("astro:page-load", () => {
+    // Reset the flag and reinit for Astro view transitions
+    const section = document.getElementById("hero-slider");
+    if (section) delete section.dataset.sliderReady;
+    initSlider();
+  });
+</script>

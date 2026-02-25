@@ -1,0 +1,478 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Container from "../../components/Container.astro";
+import { getEntry } from "astro:content";
+
+export async function getStaticPaths() {
+    const infographicLinks = [
+        { id: "idm", label: "IDM" },
+        { id: "apbdes", label: "APBDes" },
+        { id: "penduduk", label: "Penduduk" },
+        { id: "stunting", label: "Stunting" },
+        { id: "sdgs", label: "SDGs" },
+        { id: "bansos", label: "Bansos" },
+    ];
+    return infographicLinks.map((link) => ({
+        params: { slug: link.id },
+        props: { slug: link.id, label: link.label },
+    }));
+}
+
+const { slug, label } = Astro.props;
+
+// Fetch infografis data
+const infografisEntry = await getEntry("infografis", "main");
+const info: any = infografisEntry?.data || {};
+
+// Helpers to prevent undefined errors if CMS data is incomplete
+const idm = (info.idm || {}) as any;
+const apbdes = (info.apbdes || {}) as any;
+const penduduk = (info.penduduk || {}) as any;
+const stunting = (info.stunting || {}) as any;
+const sdgs = (info.sdgs || {}) as any;
+const bansos = (info.bansos || {}) as any;
+
+const infographicLinks = [
+    { id: "idm", label: "IDM", desc: "Indeks Desa Membangun", icon: "📊" },
+    { id: "apbdes", label: "APBDes", desc: "Anggaran & Belanja Desa", icon: "💰" },
+    { id: "penduduk", label: "Penduduk", desc: "Demografi Kependudukan", icon: "👥" },
+    { id: "stunting", label: "Stunting", desc: "Data Prevalensi Stunting", icon: "👶" },
+    { id: "sdgs", label: "SDGs", desc: "Pencapaian SDGs Desa", icon: "🌍" },
+    { id: "bansos", label: "Bansos", desc: "Penyaluran Bantuan Sosial", icon: "🤝" },
+];
+
+const idmStatusColor: Record<string, string> = {
+    "Sangat Tertinggal": "text-red-700 bg-red-100 border-red-200",
+    Tertinggal: "text-orange-700 bg-orange-100 border-orange-200",
+    Berkembang: "text-yellow-700 bg-yellow-100 border-yellow-200",
+    Maju: "text-blue-700 bg-blue-100 border-blue-200",
+    Mandiri: "text-emerald-700 bg-emerald-100 border-emerald-200",
+    Swasembada: "text-green-700 bg-green-100 border-green-200",
+};
+const resolvedIdmStatusColor =
+    idmStatusColor[idm.status || "Berkembang"] ||
+    "text-slate-700 bg-slate-100 border-slate-200";
+
+const stuntingTrenIcon: Record<string, string> = {
+    "TREN MENURUN":
+        '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>',
+    STABIL: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14" /></svg>',
+    "TREN MENINGKAT":
+        '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>',
+};
+const resolvedStuntingTrenIcon = stuntingTrenIcon[stunting.tren || "STABIL"];
+
+const stuntingTrenColor: Record<string, string> = {
+    "TREN MENURUN": "bg-blue-50 text-blue-700 border-blue-100",
+    STABIL: "bg-slate-50 text-slate-700 border-slate-200",
+    "TREN MENINGKAT": "bg-red-50 text-red-700 border-red-100",
+};
+const resolvedStuntingTrenColor = stuntingTrenColor[stunting.tren || "STABIL"];
+---
+
+<MainLayout title={`Infografis ${label}`}>
+    <!-- Header / Breadcrumb -->
+    <section class="bg-slate-900 pt-32 pb-12 border-b border-slate-800 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-primary-500 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
+        </div>
+        <Container className="relative z-10">
+            <nav class="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">
+                <a href="/infografis" class="hover:text-white transition-colors">Infografis</a>
+                <span>/</span>
+                <span class="text-primary-400">{label}</span>
+            </nav>
+            <h1 class="text-3xl md:text-5xl font-black text-white">{label}</h1>
+        </Container>
+    </section>
+
+    <!-- Subpage Navigation -->
+    <section class="bg-white border-b border-slate-100 sticky top-20 z-40 overflow-x-auto shadow-sm no-scrollbar">
+        <Container>
+            <div class="flex items-center py-4 gap-2 whitespace-nowrap">
+                {infographicLinks.map((link) => (
+                    <a 
+                        href={`/infografis/${link.id}`}
+                        class={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${slug === link.id ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-200 scale-105' : 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-white hover:border-primary-300 hover:text-primary-600'}`}
+                    >
+                        {link.label}
+                    </a>
+                ))}
+            </div>
+        </Container>
+    </section>
+
+    <div class="bg-slate-50 py-12 min-h-[60vh]">
+        <Container>
+            <div class="max-w-5xl mx-auto">
+                {slug === "idm" && (
+                    <section class="animate-fade-in relative">
+                        <div class="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm relative overflow-hidden">
+                            <!-- Background Accents -->
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-50"></div>
+                            
+                            <div class="relative z-10">
+                                <!-- Section Header -->
+                                <div class="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-6 mb-12">
+                                    <div>
+                                        <div class="inline-block px-3 py-1 bg-primary-50 text-primary-700 text-[10px] font-black uppercase tracking-wider rounded-md mb-3 border border-primary-100">
+                                            Data Statistik Utama
+                                        </div>
+                                        <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-4">
+                                            Indeks Desa Membangun <span class="text-primary-500">(IDM)</span>
+                                        </h2>
+                                        <p class="text-slate-500 text-lg max-w-2xl font-medium leading-relaxed">
+                                            Instrumen untuk mengukur kemajuan Desa berdasarkan status perkembangan yang dikembangkan oleh Kemendesa PDTT.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-right">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Update Terakhir</p>
+                                            <p class="text-sm font-black text-slate-700">Tahun {idm.tahun || "2024"}</p>
+                                        </div>
+                                        <div class={`px-6 py-3 rounded-2xl border-2 flex flex-col items-center justify-center min-w-[140px] ${resolvedIdmStatusColor}`}>
+                                            <span class="text-[10px] font-black uppercase tracking-widest opacity-60 mb-0.5">Status</span>
+                                            <span class="text-lg font-black leading-tight tracking-wide">{idm.status || "BERKEMBANG"}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Summary Cards -->
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                                    <div class="bg-white border-2 border-slate-50 p-6 rounded-3xl shadow-sm hover:border-primary-100 transition-colors">
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Skor IDM</p>
+                                        <p class="text-3xl font-black text-slate-900">{(idm.skor || 0).toFixed(4)}</p>
+                                    </div>
+                                    <div class="bg-white border-2 border-slate-50 p-6 rounded-3xl shadow-sm">
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Target Status</p>
+                                        <p class="text-xl font-black text-primary-600 uppercase">{idm.targetStatus || "-"}</p>
+                                    </div>
+                                    <div class="bg-white border-2 border-slate-50 p-6 rounded-3xl shadow-sm">
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Skor Minimal</p>
+                                        <p class="text-xl font-black text-slate-700">{(idm.skorMinimal || 0).toFixed(4)}</p>
+                                    </div>
+                                    <div class="bg-white border-2 border-slate-50 p-6 rounded-3xl shadow-sm relative overflow-hidden">
+                                        <div class={`absolute top-0 left-0 right-0 h-1.5 ${idm.penambahan < 0 ? "bg-emerald-500" : "bg-red-500"}`}></div>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Penambahan</p>
+                                        <p class={`text-xl font-black ${idm.penambahan < 0 ? "text-emerald-600" : "text-red-600"}`}>
+                                            {idm.penambahan > 0 ? "+" : ""}{idm.penambahan.toFixed(4)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Indices Visualization -->
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+                                    {[
+                                        { label: "Ketahanan Sosial (IKS)", val: idm.iks || 0, color: "bg-blue-500", icon: "🤝" },
+                                        { label: "Ketahanan Ekonomi (IKE)", val: idm.ike || 0, color: "bg-amber-500", icon: "💰" },
+                                        { label: "Ketahanan Lingkungan (IKL)", val: idm.ikl || 0, color: "bg-emerald-500", icon: "🌳" },
+                                    ].map((idx) => (
+                                        <div class="bg-slate-50/50 rounded-3xl p-8 border border-slate-100 flex flex-col items-center text-center">
+                                            <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-6">
+                                                {idx.icon}
+                                            </div>
+                                            <h4 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">{idx.label}</h4>
+                                            <p class="text-4xl font-black text-slate-900 mb-6">{idx.val.toFixed(4)}</p>
+                                            <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden shadow-inner">
+                                                <div class={`${idx.color} h-full transition-all duration-1000`} style={`width: ${idx.val * 100}%`}></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div class="space-y-16">
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-widest mb-8 flex items-center gap-3">
+                                            <span class="w-10 h-1 bg-primary-500 rounded-full"></span>
+                                            Riwayat Skor dari Tahun ke Tahun
+                                        </h3>
+                                        <div class="aspect-[21/9] w-full bg-slate-50 rounded-3xl border border-slate-200 p-8 flex flex-col justify-end pt-12 relative overflow-hidden group">
+                                            <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px); background-size: 40px 40px;"></div>
+                                            <div class="w-full h-full flex items-end justify-between space-x-2 md:space-x-4 relative z-10">
+                                                {(idm.riwayatSkor || []).map((col: any) => (
+                                                    <div class="w-full flex flex-col items-center group/item relative h-full justify-end">
+                                                        <div class="absolute -top-10 bg-slate-900 text-white text-[10px] font-black py-1.5 px-3 rounded-lg opacity-0 group-hover/item:opacity-100 transition-all scale-90 group-hover/item:scale-100 z-20 shadow-xl pointer-events-none">{col.skor}</div>
+                                                        <div class="w-full bg-primary-400 group-hover/item:bg-primary-600 transition-all rounded-t-xl shadow-lg border-t-4 border-white/20" style={`height: ${col.skor}%`}></div>
+                                                        <div class="text-[10px] md:text-xs font-black text-slate-500 mt-4 uppercase tracking-tighter">{col.tahun}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-widest flex items-center gap-3">
+                                                <span class="w-10 h-1 bg-primary-500 rounded-full"></span>
+                                                Daftar Indikator IDM
+                                            </h3>
+                                            <p class="text-[10px] font-bold text-slate-400 italic">* Berdasarkan matrik penilaian Kemendesa</p>
+                                        </div>
+                                        <div class="overflow-x-auto rounded-3xl border border-slate-100 shadow-sm">
+                                            <table class="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr class="bg-slate-50 border-b border-slate-100">
+                                                        <th class="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 w-16">No</th>
+                                                        <th class="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Grup / Indikator</th>
+                                                        <th class="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Skor</th>
+                                                        <th class="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Keterangan</th>
+                                                        <th class="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Diusulkan</th>
+                                                        <th class="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Stakeholders</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-50">
+                                                    {(idm.indicators || []).map((row: any, i: number) => (
+                                                        <tr class="hover:bg-slate-50/50 transition-colors group">
+                                                            <td class="p-6 text-sm font-bold text-slate-400">{i + 1}</td>
+                                                            <td class="p-6">
+                                                                <span class={`inline-block px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter mb-1.5 ${row.group === "IKS" ? "bg-blue-100 text-blue-700" : row.group === "IKE" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>{row.group}</span>
+                                                                <p class="text-sm font-black text-slate-800 leading-tight group-hover:text-primary-600 transition-colors">{row.indicator}</p>
+                                                            </td>
+                                                            <td class="p-6">
+                                                                <div class="flex flex-col items-center">
+                                                                    <span class={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shadow-sm ${row.score >= 4 ? "bg-emerald-50 text-emerald-600" : row.score >= 3 ? "bg-yellow-50 text-yellow-600" : "bg-red-50 text-red-600"}`}>{row.score}</span>
+                                                                    {row.nilaiPlus != null && <span class="text-[9px] font-bold text-emerald-500 mt-1">+{row.nilaiPlus.toFixed(4)}</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td class="p-6"><p class="text-xs text-slate-500 font-medium leading-relaxed max-w-xs">{row.keterangan || "-"}</p></td>
+                                                            <td class="p-6"><p class="text-xs text-slate-700 font-bold leading-relaxed max-w-xs">{row.kegiatan || "-"}</p></td>
+                                                            <td class="p-6">
+                                                                <div class="flex flex-wrap gap-1">{(row.stakeholders || "").split(",").map((s: string) => <span class="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black rounded uppercase tracking-tighter">{s.trim()}</span>)}</div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {slug === "apbdes" && (
+                    <section class="animate-fade-in">
+                        <div class="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
+                            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-12 pb-6 border-b border-slate-100">
+                                <div>
+                                    <h2 class="text-3xl font-black text-slate-900 mb-2">Realisasi APBDes</h2>
+                                    <p class="text-slate-500">Tahun Anggaran {apbdes.tahun || "2023"}</p>
+                                </div>
+                                {apbdes.fileLaporan && (
+                                    <a href={apbdes.fileLaporan} class="px-6 py-3 bg-primary-600 text-white hover:bg-primary-700 text-sm font-black rounded-2xl transition-all shadow-lg shadow-primary-200 inline-flex items-center gap-2" target="_blank" rel="noopener noreferrer">Laporan PDF</a>
+                                )}
+                            </div>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="relative w-80 h-80">
+                                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                            <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+                                            <path class="text-primary-500" stroke-dasharray={`${apbdes.persentaseRealisasi || 0}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+                                        </svg>
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                            <span class="text-6xl font-black text-slate-800 tracking-tighter">{apbdes.persentaseRealisasi || 0}<span class="text-2xl text-slate-400">%</span></span>
+                                            <span class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">Realisasi</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-6">
+                                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-widest mb-6 border-l-4 border-primary-500 pl-4">Rincian Belanja</h3>
+                                    <div class="space-y-4">
+                                        {(apbdes.rincianBelanja || []).map((item: any) => (
+                                            <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-primary-100 transition-all group">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="flex items-center">
+                                                        <div class={`w-4 h-4 rounded-full ${item.warna} mr-3 shadow-sm`}></div>
+                                                        <span class="text-sm font-black text-slate-700">{item.bidang}</span>
+                                                    </div>
+                                                    <span class="text-xs font-black text-primary-600 bg-white px-3 py-1 rounded-full border border-primary-100">{item.persentase}</span>
+                                                </div>
+                                                <div class="text-2xl font-black text-slate-900 ml-7">{item.anggaran}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {slug === "penduduk" && (
+                    <section class="animate-fade-in">
+                        <div class="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm relative">
+                            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-12 pb-6 border-b border-slate-100">
+                                <div>
+                                    <h2 class="text-3xl font-black text-slate-900 mb-2">Demografi Penduduk</h2>
+                                    <p class="text-slate-500">Update Semester I - 2024</p>
+                                </div>
+                                <div class="px-6 py-3 bg-slate-900 text-white text-sm font-black rounded-2xl shadow-xl shadow-slate-200">Total: <span class="text-primary-400 text-2xl ml-2">4.250</span> Jiwa</div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-widest mb-8">Jenis Kelamin</h3>
+                                    <div class="space-y-8">
+                                        {[
+                                            { label: "Laki-laki", val: penduduk.lakiLaki || 2150, total: (penduduk.lakiLaki || 0) + (penduduk.perempuan || 0), icon: "👨", color: "bg-blue-500", light: "bg-blue-100", text: "text-blue-600" },
+                                            { label: "Perempuan", val: penduduk.perempuan || 2100, total: (penduduk.lakiLaki || 0) + (penduduk.perempuan || 0), icon: "👩", color: "bg-pink-400", light: "bg-pink-100", text: "text-pink-500" }
+                                        ].map(g => (
+                                            <div>
+                                                <div class="flex items-center justify-between mb-4">
+                                                    <div class="flex items-center gap-4">
+                                                        <div class={`w-12 h-12 rounded-2xl ${g.light} ${g.text} flex items-center justify-center text-2xl shadow-sm`}>{g.icon}</div>
+                                                        <div>
+                                                            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">{g.label}</div>
+                                                            <div class="text-xl font-black text-slate-900">{g.val}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class={`text-2xl font-black ${g.text}`}>{Math.round((g.val / g.total) * 100) || 0}%</div>
+                                                </div>
+                                                <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                                                    <div class={`h-full ${g.color} rounded-full transition-all duration-1000`} style={`width: ${Math.round((g.val / g.total) * 100) || 0}%`}></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-widest mb-8">Agama</h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        {(penduduk.agama || []).map((item: any, i: number) => (
+                                            <div class="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-primary-200 transition-all group">
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 group-hover:text-primary-400">{item.agama}</div>
+                                                <div class="text-2xl font-black text-slate-900">{item.jumlah}</div>
+                                                <div class={`text-[10px] font-black mt-2 inline-block px-3 py-1 rounded-lg ${i === 0 ? "text-green-600 bg-green-50" : i === 1 ? "text-blue-600 bg-blue-50" : i === 2 ? "text-indigo-600 bg-indigo-50" : "text-slate-600 bg-slate-100"}`}>{item.persentase}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {slug === "stunting" && (
+                    <section class="animate-fade-in">
+                        <div class="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
+                            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-12 pb-6 border-b border-slate-100">
+                                <div>
+                                    <h2 class="text-3xl font-black text-slate-900 mb-2">Prevalensi Stunting</h2>
+                                    <p class="text-slate-500">Tren Penurunan 4 Tahun Terakhir</p>
+                                </div>
+                                <span class={`inline-flex px-6 py-2.5 text-sm font-black rounded-2xl border gap-2 items-center tracking-wide shadow-sm ${resolvedStuntingTrenColor}`}>
+                                    <span set:html={resolvedStuntingTrenIcon} />
+                                    {stunting.tren || "STABIL"}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                                <div class="md:col-span-3 aspect-[21/9] bg-slate-50 rounded-3xl border border-slate-200 p-8 flex flex-col justify-end pt-12 relative overflow-hidden">
+                                     <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px); background-size: 40px 40px;"></div>
+                                    <div class="w-full h-full flex items-end justify-between space-x-4 relative z-10">
+                                        {(stunting.dataTahunan || []).map((item: any) => (
+                                            <div class="w-full flex flex-col items-center group relative h-full justify-end">
+                                                <div class="absolute -top-10 bg-red-500 text-white text-xs font-black py-2 px-3 rounded-xl opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">{item.persentase}%</div>
+                                                <div class="w-full bg-red-400 group-hover:bg-red-500 transition-all rounded-t-2xl shadow-lg border-t-4 border-white/20" style={`height: ${(item.persentase / 30) * 100}%`}></div>
+                                                <div class="text-xs font-black text-slate-500 mt-4 uppercase">{item.tahun}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-4">
+                                    <div class="p-8 bg-emerald-50 rounded-3xl border border-emerald-100 text-center flex-1 flex flex-col justify-center shadow-sm">
+                                        <div class="text-4xl mb-4">🎯</div>
+                                        <div class="text-xs font-black text-emerald-700 uppercase tracking-widest mb-2">Target 2024</div>
+                                        <div class="text-4xl font-black text-emerald-800">{stunting.targetTahunIni || "8.0"}%</div>
+                                    </div>
+                                    <div class="p-8 bg-blue-50 rounded-3xl border border-blue-100 text-center flex-1 flex flex-col justify-center shadow-sm">
+                                        <div class="text-4xl mb-4">🧒</div>
+                                        <div class="text-xs font-black text-blue-700 uppercase tracking-widest mb-2">Balita Terdampak</div>
+                                        <div class="text-4xl font-black text-blue-800">{stunting.anakTerdampak || 0} <span class="text-sm font-bold">Anak</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {slug === "sdgs" && (
+                    <section class="animate-fade-in">
+                        <div class="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm">
+                            <div class="mb-12 pb-6 border-b border-slate-100">
+                                <h2 class="text-3xl font-black text-slate-900 mb-2">Pencapaian SDGs Desa</h2>
+                                <p class="text-slate-500 italic max-w-2xl">Sustainable Development Goals (Tujuan Pembangunan Berkelanjutan) untuk kemandirian dan kesejahteraan desa.</p>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                {(sdgs.daftarPencapaian || []).map((sdg: any, i: number) => (
+                                    <div class="border border-slate-100 bg-slate-50/50 rounded-3xl p-6 hover:bg-white hover:border-primary-300 hover:shadow-xl hover:shadow-primary-100/50 transition-all group">
+                                        <div class="flex items-start gap-4 mb-6">
+                                            <div class={`w-12 h-12 shrink-0 ${sdg.bgColor} text-white font-black flex items-center justify-center rounded-2xl shadow-lg shadow-black/10 text-xl`}>{i + 1}</div>
+                                            <div class="font-black text-slate-800 text-sm leading-tight group-hover:text-primary-600 transition-colors uppercase tracking-tight">{sdg.tujuan}</div>
+                                        </div>
+                                        <div class="flex items-center justify-between mb-3 text-xs">
+                                            <span class="uppercase tracking-widest font-black text-slate-400">Pencapaian</span>
+                                            <span class={`font-black ${sdg.textColor} text-xl`}>{sdg.skor}<span class="text-xs text-slate-400 font-medium ml-1">/100</span></span>
+                                        </div>
+                                        <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden shadow-inner">
+                                            <div class={`${sdg.bgColor} h-full rounded-full transition-all duration-1000`} style={`width: ${sdg.skor}%`}></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {slug === "bansos" && (
+                    <section class="animate-fade-in">
+                        <div class="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-sm relative">
+                            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-12 pb-6 border-b border-slate-100">
+                                <div>
+                                    <h2 class="text-3xl font-black text-slate-900 mb-2">Penyaluran Bantuan Sosial</h2>
+                                    <p class="text-slate-500">{bansos.periode || "Distribusi Program Kesejahteraan Masyarakat 2024"}</p>
+                                </div>
+                                <div class="px-6 py-3 bg-emerald-100 text-emerald-800 text-sm font-black rounded-2xl border border-emerald-200 inline-flex items-center gap-3 shadow-sm shadow-emerald-50">
+                                    <span class="relative flex h-3 w-3">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                    </span>
+                                    {bansos.statusPenyaluran || "PENYALURAN AKTIF"}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {(bansos.program || []).map((item: any) => (
+                                    <div class={`p-8 rounded-3xl border-2 transition-all hover:scale-[1.02] ${item.warnaCss}`}>
+                                        <div class="text-4xl mb-8 bg-white/50 backdrop-blur w-20 h-20 flex items-center justify-center rounded-3xl shadow-sm border border-white/50">
+                                            {item.icon}
+                                        </div>
+                                        <div class="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{item.nama}</div>
+                                        <div class="text-5xl font-black tracking-tighter">
+                                            {item.jumlah}
+                                            <span class="text-xs font-bold uppercase opacity-60 ml-2 tracking-widest">{item.satuan}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+            </div>
+        </Container>
+    </div>
+</MainLayout>
+
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fade-in 0.6s ease-out forwards;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>

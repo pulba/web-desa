@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://desamakmur.go.id/sitemap.xml

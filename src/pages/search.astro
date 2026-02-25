@@ -1,0 +1,403 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Container from "../components/Container.astro";
+import { getCollection } from "astro:content";
+
+// Fetch all searchable collections at build time
+const allBerita = await getCollection("berita");
+const allUMKM = await getCollection("umkm");
+const allGallery = await getCollection("gallery");
+
+// Map collections into a unified format for client-side search
+const searchableItems = [
+    ...allBerita.map((item) => ({
+        type: "Berita",
+        title: item.data.title,
+        description: item.data.excerpt || item.data.title,
+        image: item.data.image || "",
+        url: `/berita/${item.slug}`,
+        date: item.data.date,
+    })),
+    ...allUMKM.map((item) => ({
+        type: "UMKM",
+        title: item.data.name,
+        description: item.data.description || item.data.name,
+        image: item.data.image || "",
+        url: `/belanja/${item.slug}`,
+        date: new Date().toISOString(), // Fallback date if needed
+    })),
+    ...allGallery.map((item) => ({
+        type: "Galeri",
+        title: item.data.title,
+        description: item.data.category || "Galeri Desa",
+        image: item.data.image || "",
+        url: `/profil#galeri`,
+        date: item.data.date || new Date().toISOString(),
+    })),
+];
+
+// Sort items by date descending as default
+searchableItems.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+);
+---
+
+<MainLayout title="Pencarian Global | Desa Makmur">
+    <!-- Hero Section -->
+    <section
+        class="relative bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 py-20 overflow-hidden"
+    >
+        <div class="absolute inset-0 opacity-10 hidden md:block">
+            <div
+                class="absolute top-0 left-0 w-72 h-72 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"
+            >
+            </div>
+            <div
+                class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/3 translate-y-1/3"
+            >
+            </div>
+            <div
+                class="absolute top-1/2 left-1/2 w-48 h-48 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"
+            >
+            </div>
+        </div>
+
+        <Container className="relative z-10 text-center">
+            <div class="max-w-3xl mx-auto">
+                <h1
+                    class="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight"
+                >
+                    Hasil Pencarian
+                </h1>
+
+                <!-- Main Search Bar -->
+                <form
+                    action="/search"
+                    method="get"
+                    class="relative w-full max-w-2xl mx-auto mt-8 mb-4 px-2 sm:px-0"
+                >
+                    <div
+                        class="w-full flex items-center bg-white rounded-2xl shadow-2xl p-2 sm:p-2 border border-slate-100"
+                    >
+                        <div
+                            class="pl-3 sm:pl-4 pr-2 text-slate-400 flex-shrink-0"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                style="width: 24px; height: 24px; min-width: 24px;"
+                                class="w-6 h-6 sm:w-7 sm:h-7"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            name="q"
+                            id="search-input-main"
+                            placeholder="Ketik kata kunci pencarian..."
+                            class="flex-1 w-full py-3 ml-4 sm:py-4 text-base sm:text-lg font-medium outline-none text-slate-800 bg-transparent min-w-0"
+                        />
+                        <div
+                            class="pr-1 sm:pr-2 pl-2 border-l border-slate-100 ml-2"
+                        >
+                            <button
+                                type="submit"
+                                class="bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white px-4 sm:px-8 py-2.5 sm:py-3 rounded-xl font-black transition-all text-sm sm:text-base whitespace-nowrap shadow-md hover:shadow-lg w-full h-full flex items-center justify-center cursor-pointer"
+                            >
+                                Cari
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="px-4">
+                    <p
+                        id="search-summary"
+                        class="text-primary-100 text-base md:text-lg mt-6 leading-relaxed font-medium min-h-[28px] break-words"
+                    >
+                    </p>
+                </div>
+            </div>
+        </Container>
+    </section>
+
+    <!-- Results Section -->
+    <section class="section-padding bg-slate-50 min-h-[50vh]">
+        <Container>
+            <!-- Filter Tabs -->
+            <div
+                id="filter-tabs"
+                class="flex flex-wrap gap-2 mb-10 justify-center hidden"
+            >
+                <button
+                    data-filter="all"
+                    class="filter-btn px-5 py-2 rounded-full text-sm font-bold transition-all bg-primary-600 text-white shadow-lg shadow-primary-200"
+                    >Semua (<span id="count-all">0</span>)</button
+                >
+                <button
+                    data-filter="Berita"
+                    class="filter-btn px-5 py-2 rounded-full text-sm font-bold transition-all bg-white border border-slate-200 text-slate-600 hover:border-primary-500 hover:text-primary-600"
+                    >Berita (<span id="count-berita">0</span>)</button
+                >
+                <button
+                    data-filter="UMKM"
+                    class="filter-btn px-5 py-2 rounded-full text-sm font-bold transition-all bg-white border border-slate-200 text-slate-600 hover:border-primary-500 hover:text-primary-600"
+                    >UMKM (<span id="count-umkm">0</span>)</button
+                >
+                <button
+                    data-filter="Galeri"
+                    class="filter-btn px-5 py-2 rounded-full text-sm font-bold transition-all bg-white border border-slate-200 text-slate-600 hover:border-primary-500 hover:text-primary-600"
+                    >Galeri (<span id="count-galeri">0</span>)</button
+                >
+            </div>
+
+            <!-- Pre-injected payload for client side -->
+            <data
+                id="search-payload"
+                value={JSON.stringify(searchableItems)}
+                class="hidden"></data>
+
+            <!-- Results Grid -->
+            <div
+                id="results-grid"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+                <!-- Javascript will render items here -->
+            </div>
+
+            <!-- Empty State -->
+            <div
+                id="empty-state"
+                class="hidden flex flex-col items-center justify-center py-20 text-center"
+            >
+                <div class="text-7xl mb-6 opacity-80">🔍</div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-3">
+                    Tidak Ada Hasil
+                </h3>
+                <p class="text-slate-500 max-w-md">
+                    Kami tidak dapat menemukan apa pun yang cocok dengan kata
+                    kunci pencarian Anda. Coba gunakan kata kunci yang lebih
+                    umum.
+                </p>
+                <a
+                    href="/"
+                    class="mt-8 px-8 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 hover:text-primary-600 transition-colors"
+                >
+                    Kembali ke Beranda
+                </a>
+            </div>
+
+            <!-- Loading State -->
+            <div
+                id="loading-state"
+                class="flex flex-col items-center justify-center py-20 text-center"
+            >
+                <div
+                    class="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mb-4"
+                >
+                </div>
+                <p class="text-slate-500 font-medium">Mencari informasi...</p>
+            </div>
+        </Container>
+    </section>
+
+    <!-- Client Script -->
+    <script>
+        document.addEventListener("astro:page-load", initSearch);
+        document.addEventListener("DOMContentLoaded", initSearch);
+
+        function initSearch() {
+            const payloadEl = document.getElementById("search-payload");
+            if (!payloadEl) return; // Exit if not on search page
+
+            const allItems: SearchItem[] = JSON.parse(
+                payloadEl.getAttribute("value") || "[]",
+            );
+
+            const searchInput = document.getElementById(
+                "search-input-main",
+            ) as HTMLInputElement;
+            const resultsGrid = document.getElementById("results-grid");
+            const emptyState = document.getElementById("empty-state");
+            const loadingState = document.getElementById("loading-state");
+            const summaryText = document.getElementById("search-summary");
+            const filterTabs = document.getElementById("filter-tabs");
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get("q") || "";
+            let currentFilter = "all";
+            interface SearchItem {
+                type: string;
+                title: string;
+                description: string;
+                image: string;
+                url: string;
+                date: string;
+            }
+            let matchedItems: SearchItem[] = [];
+
+            // Populate input and handle styling
+            if (searchInput) {
+                searchInput.value = query;
+            }
+
+            // Small timeout to show loading animation briefly for UX
+            setTimeout(() => {
+                loadingState?.classList.add("hidden");
+                performSearch(query);
+            }, 300);
+
+            // Setup Filter Buttons
+            const filterBtns = document.querySelectorAll(".filter-btn");
+            filterBtns.forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    const target = e.currentTarget as HTMLButtonElement;
+                    currentFilter = target.getAttribute("data-filter") || "all";
+
+                    // Update styling
+                    filterBtns.forEach((b) => {
+                        b.className =
+                            "filter-btn px-5 py-2 rounded-full text-sm font-bold transition-all bg-white border border-slate-200 text-slate-600 hover:border-primary-500 hover:text-primary-600";
+                    });
+                    target.className =
+                        "filter-btn px-5 py-2 rounded-full text-sm font-bold transition-all bg-primary-600 text-white shadow-lg shadow-primary-200";
+
+                    renderResults();
+                });
+            });
+
+            function performSearch(q: string) {
+                if (!resultsGrid || !emptyState || !summaryText) return;
+
+                if (!q.trim()) {
+                    summaryText.textContent =
+                        "Silakan masukkan kata kunci pencarian di atas.";
+                    emptyState.classList.remove("hidden");
+                    return;
+                }
+
+                const searchTerm = q.toLowerCase();
+
+                // Filter all items
+                matchedItems = allItems.filter((item: any) => {
+                    return (
+                        item.title.toLowerCase().includes(searchTerm) ||
+                        item.description.toLowerCase().includes(searchTerm)
+                    );
+                });
+
+                // Update Counts
+                const countBerita = matchedItems.filter(
+                    (i: any) => i.type === "Berita",
+                ).length;
+                const countUmkm = matchedItems.filter(
+                    (i: any) => i.type === "UMKM",
+                ).length;
+                const countGaleri = matchedItems.filter(
+                    (i: any) => i.type === "Galeri",
+                ).length;
+
+                document.getElementById("count-all")!.innerText =
+                    matchedItems.length.toString();
+                document.getElementById("count-berita")!.innerText =
+                    countBerita.toString();
+                document.getElementById("count-umkm")!.innerText =
+                    countUmkm.toString();
+                document.getElementById("count-galeri")!.innerText =
+                    countGaleri.toString();
+
+                if (matchedItems.length > 0) {
+                    summaryText.innerHTML = `Menemukan <span class="bg-white text-primary-700 font-black px-2 md:px-3 py-0.5 md:py-1 rounded-lg text-lg md:text-xl shadow-inner mx-1">${matchedItems.length}</span> hasil untuk <br class="block md:hidden" />"<span class="text-yellow-300 font-bold italic tracking-wide break-all">${q}</span>"`;
+                    filterTabs?.classList.remove("hidden");
+                    filterTabs?.classList.add("flex");
+                    renderResults();
+                } else {
+                    summaryText.innerHTML = `Tidak ada hasil untuk <br class="block md:hidden" />"<span class="text-yellow-300 font-bold italic tracking-wide break-all">${q}</span>"`;
+                    resultsGrid.innerHTML = "";
+                    emptyState.classList.remove("hidden");
+                    filterTabs?.classList.add("hidden");
+                    filterTabs?.classList.remove("flex");
+                }
+            }
+
+            function renderResults() {
+                if (!resultsGrid) return;
+                resultsGrid.innerHTML = "";
+
+                // Apply currently selected filter
+                const filteredList =
+                    currentFilter === "all"
+                        ? matchedItems
+                        : matchedItems.filter(
+                              (i: any) => i.type === currentFilter,
+                          );
+
+                if (filteredList.length === 0) {
+                    resultsGrid.innerHTML =
+                        '<div class="col-span-full text-center py-10 text-slate-500">Tidak ada item di kategori ini.</div>';
+                    return;
+                }
+
+                let html = "";
+                filteredList.forEach((item: any) => {
+                    let typeColor = "bg-primary-100 text-primary-700";
+                    if (item.type === "UMKM")
+                        typeColor = "bg-green-100 text-green-700";
+                    else if (item.type === "Galeri")
+                        typeColor = "bg-purple-100 text-purple-700";
+
+                    html += `
+                        <a href="${item.url}" class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+                            ${
+                                item.image
+                                    ? `
+                                <div class="h-48 overflow-hidden relative">
+                                    <div class="absolute inset-0 bg-slate-100 animate-pulse"></div>
+                                    <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover relative z-10 group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                                    <div class="absolute top-4 left-4 z-20">
+                                        <span class="inline-flex px-3 py-1 rounded-full ${typeColor} font-bold text-xs shadow-sm backdrop-blur-md bg-white/90">
+                                            ${item.type}
+                                        </span>
+                                    </div>
+                                </div>
+                            `
+                                    : `
+                                <div class="px-6 pt-6">
+                                    <span class="inline-flex px-3 py-1 rounded-full ${typeColor} font-bold text-xs shadow-sm bg-opacity-50">
+                                        ${item.type}
+                                    </span>
+                                </div>
+                            `
+                            }
+                            
+                            <div class="p-6 flex flex-col flex-1">
+                                <h3 class="text-xl font-bold text-slate-800 mb-3 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight">
+                                    ${item.title}
+                                </h3>
+                                <p class="text-slate-600 text-sm line-clamp-3 mb-6 flex-1">
+                                    ${item.description}
+                                </p>
+                                <div class="text-primary-600 font-bold text-sm flex items-center group-hover:tracking-wider transition-all mt-auto">
+                                    Kunjungi Halaman
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+
+                resultsGrid.innerHTML = html;
+            }
+        }
+    </script>
+</MainLayout>

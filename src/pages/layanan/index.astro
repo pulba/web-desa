@@ -1,0 +1,1199 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Container from "../../components/Container.astro";
+import SectionTitle from "../../components/SectionTitle.astro";
+import Button from "../../components/Button.astro";
+import { getEntry } from "astro:content";
+
+const settingsEntry = await getEntry("settings", "main");
+const whatsappLayanan = settingsEntry?.data.whatsappLayanan || "";
+
+const pelacakanEntry = await getEntry("pelacakan", "main");
+const pelacakanData = pelacakanEntry?.data?.surat || [];
+
+const bantuanEntry = await getEntry("bantuan", "main");
+const bantuanData = bantuanEntry?.data?.penerima || [];
+
+const tabItems = [
+    { id: "permohonan", label: "Permohonan Surat", icon: "📝" },
+    { id: "lacak", label: "Lacak Status Surat", icon: "🔍" },
+    { id: "cek-nik", label: "Cek Bantuan Sosial", icon: "🛡️" },
+];
+
+const jenisSurat = [
+    "Surat Keterangan Usaha (SKU)",
+    "Surat Keterangan Domisili",
+    "Surat Pengantar Pembuatan KTP",
+    "Surat Pengantar SKCK",
+    "Surat Keterangan Tidak Mampu (SKTM)",
+    "Surat Keterangan Kematian",
+    "Surat Keterangan Kelahiran",
+];
+---
+
+<MainLayout title="Layanan Mandiri Desa">
+    <!-- Hero Section -->
+    <section
+        class="bg-primary-700 text-white relative py-16 md:py-24 overflow-hidden"
+    >
+        <div class="absolute inset-0 z-0">
+            <div
+                class="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-700/50 mix-blend-multiply"
+            >
+            </div>
+            <img
+                src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=2000"
+                alt="Layanan Desa"
+                class="w-full h-full object-cover"
+            />
+        </div>
+        <Container className="relative z-10">
+            <div class="max-w-3xl">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white backdrop-blur-md mb-6 border border-white/20 font-medium text-sm"
+                >
+                    <span>⚡</span> Layanan Cepat 24/7
+                </div>
+                <h1
+                    class="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight"
+                >
+                    Layanan Mandiri <br />
+                    <span class="text-primary-300">Responsif & Transparan</span>
+                </h1>
+                <p
+                    class="text-lg md:text-xl text-primary-50 mb-8 max-w-2xl leading-relaxed"
+                >
+                    Ajukan surat, lacak status permohonan, dan cek data bantuan
+                    sosial Anda secara mandiri dari mana saja tanpa antre.
+                </p>
+            </div>
+        </Container>
+    </section>
+
+    <!-- Interactive Hub Section -->
+    <section class="section-padding bg-slate-50 min-h-screen">
+        <Container>
+            <div class="max-w-5xl mx-auto -mt-24 md:-mt-32 relative z-20">
+                <!-- Tabs Navigation -->
+                <div
+                    class="bg-white rounded-t-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row overflow-hidden"
+                >
+                    {
+                        tabItems.map((tab, idx) => (
+                            <button
+                                class={`tab-button flex items-center justify-start md:justify-center gap-3 px-6 py-4 md:py-8 font-bold text-[15px] md:text-base border-b-2 whitespace-normal flex-1 transition-colors ${idx === 0 ? "text-primary-600 border-primary-600 bg-primary-50/50" : "text-slate-500 border-transparent hover:text-slate-800 hover:bg-slate-50"}`}
+                                data-target={tab.id}
+                            >
+                                <span class="text-xl md:text-2xl">
+                                    {tab.icon}
+                                </span>
+                                <span class="text-left leading-tight">
+                                    {tab.label}
+                                </span>
+                            </button>
+                        ))
+                    }
+                </div>
+
+                <!-- Tab Contents Wrapper -->
+                <div
+                    class="bg-white rounded-b-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 min-h-[500px]"
+                >
+                    <!-- TAB 1: Permohonan Surat -->
+                    <div
+                        id="tab-permohonan"
+                        class="tab-content block animate-fade-in relative"
+                    >
+                        <!-- Loading Overlay -->
+                        <div
+                            id="form-loading"
+                            class="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 hidden items-center justify-center rounded-2xl"
+                        >
+                            <div class="flex flex-col items-center">
+                                <div
+                                    class="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-4"
+                                >
+                                </div>
+                                <p
+                                    class="text-primary-800 font-medium animate-pulse"
+                                >
+                                    Memproses Permohonan...
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Success State -->
+                        <div
+                            id="form-success"
+                            class="hidden flex-col items-center justify-center py-12 text-center"
+                        >
+                            <div
+                                class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner"
+                            >
+                                ✓
+                            </div>
+                            <h3 class="text-2xl font-bold text-slate-800 mb-2">
+                                Permohonan Terkirim!
+                            </h3>
+                            <p class="text-slate-600 mb-6 max-w-md">
+                                Surat Anda telah masuk ke sistem kami dan sedang
+                                menunggu verifikasi oleh staf desa.
+                            </p>
+                            <div
+                                class="bg-slate-50 border border-slate-200 p-6 rounded-2xl w-full max-w-md mb-8"
+                            >
+                                <p
+                                    class="text-sm text-slate-500 font-medium mb-1"
+                                >
+                                    Nomor Resi Pelacakan Anda:
+                                </p>
+                                <div
+                                    class="flex items-center justify-center gap-3"
+                                >
+                                    <span
+                                        id="resi-number"
+                                        class="text-3xl font-black text-primary-700 tracking-wider"
+                                        >SM-12345</span
+                                    >
+                                    <button
+                                        id="copy-resi"
+                                        class="p-2 text-slate-400 hover:text-primary-600 transition-colors"
+                                        title="Salin Resi"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-6 w-6"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            ><path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                            ></path></svg
+                                        >
+                                    </button>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">
+                                    *Simpan nomor ini untuk melacak status surat
+                                    Anda.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                id="btn-permohonan-baru"
+                                class="px-6 py-3 rounded-xl font-bold border-2 border-slate-200 text-slate-700 hover:border-primary-600 hover:text-primary-600 transition-colors"
+                            >
+                                Buat Permohonan Baru
+                            </button>
+                        </div>
+
+                        <!-- Form -->
+                        <div id="form-container" data-wa={whatsappLayanan}>
+                            <div class="mb-8 border-b border-slate-100 pb-6">
+                                <h3
+                                    class="text-2xl font-bold text-slate-800 mb-2"
+                                >
+                                    Formulir Permohonan Surat
+                                </h3>
+                                <p class="text-slate-600">
+                                    Lengkapi data di bawah ini dengan benar
+                                    sesuai identitas KTP Anda.
+                                </p>
+                            </div>
+
+                            <form id="permohonan-form" class="space-y-6">
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                >
+                                    <!-- NIK -->
+                                    <div class="space-y-2">
+                                        <label
+                                            for="nik"
+                                            class="block font-bold text-slate-800 text-sm"
+                                            >Nomor Induk Kependudukan (NIK) <span
+                                                class="text-red-500">*</span
+                                            ></label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="nik"
+                                            name="nik"
+                                            required
+                                            pattern="[0-9]{16}"
+                                            placeholder="Masukkan 16 digit NIK"
+                                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all placeholder:text-slate-400"
+                                        />
+                                    </div>
+                                    <!-- NAMA -->
+                                    <div class="space-y-2">
+                                        <label
+                                            for="namaLengkap"
+                                            class="block font-bold text-slate-800 text-sm"
+                                            >Nama Lengkap <span
+                                                class="text-red-500">*</span
+                                            ></label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="namaLengkap"
+                                            name="namaLengkap"
+                                            required
+                                            placeholder="Sesuai KTP"
+                                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all placeholder:text-slate-400"
+                                        />
+                                    </div>
+                                    <!-- JENIS SURAT -->
+                                    <div class="space-y-2 md:col-span-2">
+                                        <label
+                                            for="jenisSurat"
+                                            class="block font-bold text-slate-800 text-sm"
+                                            >Jenis Surat <span
+                                                class="text-red-500">*</span
+                                            ></label
+                                        >
+                                        <div class="relative">
+                                            <select
+                                                id="jenisSurat"
+                                                name="jenisSurat"
+                                                required
+                                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all appearance-none text-slate-700"
+                                            >
+                                                <option
+                                                    value=""
+                                                    disabled
+                                                    selected
+                                                    >Pilih jenis surat yang
+                                                    diajukan...</option
+                                                >
+                                                {
+                                                    jenisSurat.map((surat) => (
+                                                        <option value={surat}>
+                                                            {surat}
+                                                        </option>
+                                                    ))
+                                                }
+                                            </select>
+                                            <div
+                                                class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500"
+                                            >
+                                                <svg
+                                                    class="h-5 w-5"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    ><path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 9l-7 7-7-7"
+                                                    ></path></svg
+                                                >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- KETERANGAN -->
+                                    <div class="space-y-2 md:col-span-2">
+                                        <label
+                                            for="keperluan"
+                                            class="block font-bold text-slate-800 text-sm"
+                                            >Keperluan / Keterangan Tambahan <span
+                                                class="text-red-500">*</span
+                                            ></label
+                                        >
+                                        <textarea
+                                            id="keperluan"
+                                            name="keperluan"
+                                            rows="3"
+                                            required
+                                            placeholder="Jelaskan secara singkat keperluan pembuatan surat ini..."
+                                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all placeholder:text-slate-400 resize-none"
+                                        ></textarea>
+                                    </div>
+                                    <!-- NO HP -->
+                                    <div class="space-y-2 md:col-span-2">
+                                        <label
+                                            for="noHp"
+                                            class="block font-bold text-slate-800 text-sm"
+                                            >Nomor WhatsApp Aktif <span
+                                                class="text-red-500">*</span
+                                            ></label
+                                        >
+                                        <div class="flex">
+                                            <span
+                                                class="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-slate-200 bg-white text-slate-500 font-medium"
+                                                >+62</span
+                                            >
+                                            <input
+                                                type="tel"
+                                                id="noHp"
+                                                name="noHp"
+                                                required
+                                                pattern="[0-9]{9,13}"
+                                                placeholder="81234567890"
+                                                class="w-full px-4 py-3 rounded-r-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all placeholder:text-slate-400 flex-1"
+                                            />
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            Kami akan mengirimkan notifikasi via
+                                            WhatsApp jika surat selesai.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="pt-6 border-t border-slate-100 flex items-center justify-end gap-4"
+                                >
+                                    <button
+                                        type="reset"
+                                        class="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors"
+                                        >Reset</button
+                                    >
+                                    <button
+                                        type="submit"
+                                        class="px-8 py-3 rounded-xl font-bold bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition-all flex items-center gap-2 group"
+                                    >
+                                        Kirim Permohonan
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-5 w-5 group-hover:translate-x-1 transition-transform"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            ><path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                            ></path></svg
+                                        >
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Lacak Surat -->
+                    <div
+                        id="tab-lacak"
+                        class="tab-content hidden animate-fade-in relative min-h-[400px]"
+                    >
+                        <!-- Search Form -->
+                        <div
+                            class="mb-8 border-b border-slate-100 pb-8 max-w-2xl mx-auto text-center"
+                        >
+                            <h3 class="text-2xl font-bold text-slate-800 mb-2">
+                                Lacak Status Surat Anda
+                            </h3>
+                            <p class="text-slate-600 mb-6">
+                                Masukkan Nomor Resi Pelacakan yang Anda dapatkan
+                                saat mengajukan permohonan surat.
+                            </p>
+
+                            <form
+                                id="lacak-form"
+                                class="flex flex-col sm:flex-row gap-4 justify-center"
+                            >
+                                <input
+                                    type="text"
+                                    id="input-resi"
+                                    placeholder="Resi (Contoh: SM-12345)"
+                                    class="px-6 py-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all placeholder:text-slate-400 text-center sm:text-left font-bold tracking-wider w-full sm:w-auto uppercase"
+                                />
+                                <input
+                                    type="text"
+                                    id="input-nik-lacak"
+                                    pattern="[0-9]{16}"
+                                    placeholder="16 digit NIK Anda"
+                                    class="px-6 py-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all placeholder:text-slate-400 text-center sm:text-left font-bold tracking-wider w-full sm:w-auto flex-1"
+                                />
+                                <button
+                                    type="submit"
+                                    class="px-8 py-4 rounded-xl font-bold bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition-all flex items-center justify-center gap-2 group whitespace-nowrap"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5 group-hover:scale-110 transition-transform"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        ><path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                        ></path></svg
+                                    >
+                                    Cari Surat
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div
+                            id="lacak-loading"
+                            class="hidden flex-col items-center justify-center py-12"
+                        >
+                            <div
+                                class="w-10 h-10 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin mb-4"
+                            >
+                            </div>
+                            <p
+                                class="text-slate-500 font-medium animate-pulse text-sm"
+                            >
+                                Mencari data ke server...
+                            </p>
+                        </div>
+
+                        <!-- Error State -->
+                        <div
+                            id="lacak-error"
+                            class="hidden flex-col items-center justify-center py-8 text-center bg-red-50 rounded-2xl border border-red-100 max-w-2xl mx-auto"
+                        >
+                            <span class="text-4xl mb-2">⚠️</span>
+                            <h4 class="text-lg font-bold text-red-800 mb-1">
+                                Resi Tidak Ditemukan
+                            </h4>
+                            <p class="text-sm text-red-600 max-w-sm">
+                                Pastikan nomor resi yang Anda masukkan benar.
+                                Jika baru saja mengajukan, tunggu beberapa menit
+                                lalu coba lagi.
+                            </p>
+                        </div>
+
+                        <!-- Timeline Result -->
+                        <div id="lacak-result" class="hidden max-w-2xl mx-auto">
+                            <div
+                                class="bg-slate-50 border border-slate-200 p-6 rounded-2xl mb-8 flex flex-col md:flex-row justify-between md:items-center gap-4"
+                            >
+                                <div>
+                                    <p
+                                        class="text-sm text-slate-500 font-medium mb-1"
+                                    >
+                                        Hasil Pelacakan untuk Resi:
+                                    </p>
+                                    <h4
+                                        id="result-resi"
+                                        class="text-2xl font-black text-slate-800 tracking-wider"
+                                    >
+                                        SM-12345
+                                    </h4>
+                                </div>
+                                <div class="text-right">
+                                    <span
+                                        class="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold text-xs"
+                                        >STATUS: DIPROSES</span
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Vertical Timeline -->
+                            <div
+                                class="relative border-l-2 border-slate-200 ml-4 md:ml-8 space-y-12 pb-8"
+                            >
+                                <!-- Step 1: Diterima -->
+                                <div class="relative pl-8">
+                                    <div
+                                        class="absolute w-5 h-5 bg-green-500 rounded-full -left-[11px] top-1 border-4 border-white shadow-sm"
+                                    >
+                                    </div>
+                                    <div
+                                        class="flex flex-col md:flex-row md:items-start justify-between gap-2"
+                                    >
+                                        <div>
+                                            <h5
+                                                class="font-bold text-slate-800 text-lg"
+                                            >
+                                                Permohonan Diterima
+                                            </h5>
+                                            <p
+                                                class="text-slate-600 text-sm mt-1"
+                                            >
+                                                Sistem telah menerima data
+                                                permohonan Anda.
+                                            </p>
+                                        </div>
+                                        <span
+                                            class="text-xs font-bold text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100"
+                                            >Hari Ini, 09:00</span
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Verifikasi -->
+                                <div class="relative pl-8">
+                                    <div
+                                        class="absolute w-5 h-5 bg-primary-500 rounded-full -left-[11px] top-1 border-4 border-white shadow-sm ring-4 ring-primary-100 animate-pulse"
+                                    >
+                                    </div>
+                                    <div
+                                        class="flex flex-col md:flex-row md:items-start justify-between gap-2"
+                                    >
+                                        <div>
+                                            <h5
+                                                class="font-bold text-primary-700 text-lg"
+                                            >
+                                                Verifikasi Berkas
+                                            </h5>
+                                            <p
+                                                class="text-slate-600 text-sm mt-1 max-w-sm"
+                                            >
+                                                Staf administrasi desa sedang
+                                                memeriksa kelengkapan data NIK
+                                                dan KTP Anda.
+                                            </p>
+                                        </div>
+                                        <span
+                                            class="text-xs font-bold text-primary-500 bg-primary-50 px-2 py-1 rounded-md border border-primary-100"
+                                            >Sedang Proses</span
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Tanda Tangan -->
+                                <div class="relative pl-8 opacity-40">
+                                    <div
+                                        class="absolute w-5 h-5 bg-slate-200 rounded-full -left-[11px] top-1 border-4 border-white"
+                                    >
+                                    </div>
+                                    <div>
+                                        <h5
+                                            class="font-bold text-slate-700 text-lg"
+                                        >
+                                            Menunggu Tanda Tangan
+                                        </h5>
+                                        <p class="text-slate-500 text-sm mt-1">
+                                            Surat sedang diajukan ke Kepala Desa
+                                            / Sekdes untuk ditandatangani.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Step 4: Selesai -->
+                                <div class="relative pl-8 opacity-40">
+                                    <div
+                                        class="absolute w-5 h-5 bg-slate-200 rounded-full -left-[11px] top-1 border-4 border-white"
+                                    >
+                                    </div>
+                                    <div>
+                                        <h5
+                                            class="font-bold text-slate-700 text-lg"
+                                        >
+                                            Surat Selesai
+                                        </h5>
+                                        <p class="text-slate-500 text-sm mt-1">
+                                            Surat siap diambil di Kantor Balai
+                                            Desa pada jam kerja.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: Cek Bantuan Sosial -->
+                    <div
+                        id="tab-cek-nik"
+                        class="tab-content hidden animate-fade-in relative min-h-[400px]"
+                    >
+                        <!-- Search Form -->
+                        <div
+                            class="mb-8 border-b border-slate-100 pb-8 max-w-2xl mx-auto text-center"
+                        >
+                            <h3 class="text-2xl font-bold text-slate-800 mb-2">
+                                Cek Status Penerima Bantuan
+                            </h3>
+                            <p class="text-slate-600 mb-6">
+                                Masukkan Nomor Induk Kependudukan (NIK) Anda
+                                untuk melihat status kepesertaan bantuan sosial
+                                dari pemerintah desa maupun pusat.
+                            </p>
+
+                            <form
+                                id="cek-nik-form"
+                                data-bantuan={JSON.stringify(bantuanData)}
+                                class="flex flex-col sm:flex-row gap-4 justify-center"
+                            >
+                                <input
+                                    type="text"
+                                    id="input-nik"
+                                    required
+                                    pattern="[0-9]{16}"
+                                    placeholder="Masukkan 16 digit NIK..."
+                                    class="px-6 py-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all placeholder:text-slate-400 text-center sm:text-left font-bold tracking-wider w-full sm:w-auto flex-1"
+                                />
+                                <button
+                                    type="submit"
+                                    class="px-8 py-4 rounded-xl font-bold bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition-all flex items-center justify-center gap-2 group whitespace-nowrap"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5 group-hover:scale-110 transition-transform"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                        ></path>
+                                    </svg>
+                                    Cari Data
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div
+                            id="nik-loading"
+                            class="hidden flex-col items-center justify-center py-12"
+                        >
+                            <div
+                                class="w-10 h-10 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin mb-4"
+                            >
+                            </div>
+                            <p
+                                class="text-slate-500 font-medium animate-pulse text-sm"
+                            >
+                                Validasi NIK ke server Dukcapil & DTKS...
+                            </p>
+                        </div>
+
+                        <!-- Result Data Found -->
+                        <div
+                            id="nik-result-found"
+                            class="hidden max-w-3xl mx-auto"
+                        >
+                            <div
+                                class="bg-green-50 border border-green-200 p-4 rounded-xl mb-6 flex items-start gap-4"
+                            >
+                                <span class="text-2xl">✅</span>
+                                <div>
+                                    <h4 class="font-bold text-green-800">
+                                        Data Ditemukan
+                                    </h4>
+                                    <p class="text-green-700 text-sm mt-1">
+                                        NIK
+                                        <span
+                                            id="res-nik"
+                                            class="font-bold border-b border-green-700 border-dashed"
+                                        ></span>
+                                        tercatat dalam basis data Terpadu Desa.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-white border text-center md:text-left border-slate-200 rounded-3xl overflow-hidden shadow-sm"
+                            >
+                                <div
+                                    class="bg-slate-50 px-6 py-4 border-b border-slate-200"
+                                >
+                                    <h5 class="font-bold text-slate-800">
+                                        Detail Status Bantuan
+                                    </h5>
+                                </div>
+                                <div id="program-list" class="p-6 grid gap-6">
+                                    <!-- Dinamis dari JS -->
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-center text-slate-400 mt-6">
+                                *Data berdasarkan Basis Data Terpadu Desa.
+                                Hubungi Kantor Desa jika terdapat kekeliruan.
+                            </p>
+                        </div>
+
+                        <!-- Result Data Not Found -->
+                        <div
+                            id="nik-result-not-found"
+                            class="hidden flex-col items-center justify-center py-12 text-center max-w-2xl mx-auto"
+                        >
+                            <div
+                                class="w-20 h-20 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-4xl mb-6"
+                            >
+                                📁
+                            </div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-2">
+                                Data NIK Belum Terdaftar di DTKS
+                            </h4>
+                            <p class="text-slate-600 max-w-md">
+                                NIK yang Anda masukkan tidak terdaftar sebagai
+                                penerima bantuan sosial pada periode ini. Jika
+                                Anda merasa berhak, silakan hubungi Kantor Desa
+                                atau Kader Pendata.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Container>
+    </section>
+</MainLayout>
+
+<style>
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    function initLayananMandiri() {
+        // Tab Logic
+        const tabButtons = document.querySelectorAll(".tab-button");
+        const tabContents = document.querySelectorAll(".tab-content");
+
+        tabButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const targetId = button.getAttribute("data-target");
+
+                // Update Buttons
+                tabButtons.forEach((btn) => {
+                    btn.classList.remove(
+                        "text-primary-600",
+                        "border-primary-600",
+                        "bg-primary-50/50",
+                    );
+                    btn.classList.add("text-slate-500", "border-transparent");
+                });
+                button.classList.add(
+                    "text-primary-600",
+                    "border-primary-600",
+                    "bg-primary-50/50",
+                );
+                button.classList.remove("text-slate-500", "border-transparent");
+
+                // Update Contents
+                tabContents.forEach((content) => {
+                    if (content.id === `tab-${targetId}`) {
+                        content.classList.remove("hidden");
+                        content.classList.add("block");
+                    } else {
+                        content.classList.remove("block");
+                        content.classList.add("hidden");
+                    }
+                });
+            });
+        });
+
+        // Form Simulation Logic
+        const form = document.getElementById(
+            "permohonan-form",
+        ) as HTMLFormElement;
+        const formContainer = document.getElementById("form-container");
+        const formLoading = document.getElementById("form-loading");
+        const formSuccess = document.getElementById("form-success");
+        const resiNumberEl = document.getElementById("resi-number");
+        const btnBaru = document.getElementById("btn-permohonan-baru");
+        const copyBtn = document.getElementById("copy-resi");
+
+        if (form) {
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                // Validation check (browser handles basic required/pattern)
+                if (!form.checkValidity()) return;
+
+                // Generate Random Resi
+                const randomNum = Math.floor(10000 + Math.random() * 90000);
+                const typesId = ["SK", "KU", "DM", "KT"];
+                const prefix =
+                    typesId[Math.floor(Math.random() * typesId.length)];
+                const resi = `${prefix}-${randomNum}`;
+
+                if (resiNumberEl) resiNumberEl.textContent = resi;
+
+                // Get Form Values
+                const nikVal = (
+                    document.getElementById("nik") as HTMLInputElement
+                ).value;
+                const namaVal = (
+                    document.getElementById("namaLengkap") as HTMLInputElement
+                ).value;
+                const suratVal = (
+                    document.getElementById("jenisSurat") as HTMLSelectElement
+                ).value;
+                const kepVal = (
+                    document.getElementById("keperluan") as HTMLTextAreaElement
+                ).value;
+                const noHpVal = (
+                    document.getElementById("noHp") as HTMLInputElement
+                ).value;
+
+                const waNumber = formContainer?.getAttribute("data-wa") || "";
+
+                // Show loading
+                formLoading?.classList.remove("hidden");
+                formLoading?.classList.add("flex");
+
+                fetch("/api/submit-permohonan", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        resi,
+                        nik: nikVal,
+                        nama: namaVal,
+                        jenisSurat: suratVal,
+                        keperluan: kepVal,
+                        noHp: noHpVal,
+                    }),
+                })
+                    .then((res) => res.json())
+                    .then((data) => {
+                        formLoading?.classList.remove("flex");
+                        formLoading?.classList.add("hidden");
+
+                        if (data.success) {
+                            if (waNumber) {
+                                const waMessage = `Halo Admin Desa,\nSaya ingin mengajukan permohonan surat.\n\n*Nomor Resi:* ${resi}\n*NIK:* ${nikVal}\n*Nama Lengkap:* ${namaVal}\n*Jenis Surat:* ${suratVal}\n*Keperluan:* ${kepVal}\n*No HP/WA:* +62${noHpVal}\n\nMohon bantuannya untuk diproses. Terima kasih.`;
+                                const encodedMessage =
+                                    encodeURIComponent(waMessage);
+                                window.open(
+                                    `https://wa.me/${waNumber}?text=${encodedMessage}`,
+                                    "_blank",
+                                );
+                            }
+                            formContainer?.classList.add("hidden");
+                            formSuccess?.classList.remove("hidden");
+                            formSuccess?.classList.add("flex");
+                        } else {
+                            alert(data.error || "Gagal mengirim permohonan");
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        alert("Terjadi kesalahan jaringan.");
+                        formLoading?.classList.remove("flex");
+                        formLoading?.classList.add("hidden");
+                    });
+            });
+        }
+
+        if (btnBaru) {
+            btnBaru.addEventListener("click", (e) => {
+                e.preventDefault();
+                // Reset state
+                form?.reset();
+                formSuccess?.classList.remove("flex");
+                formSuccess?.classList.add("hidden");
+                formContainer?.classList.remove("hidden");
+            });
+        }
+
+        if (copyBtn && resiNumberEl) {
+            copyBtn.addEventListener("click", () => {
+                navigator.clipboard.writeText(resiNumberEl.textContent || "");
+                const originalHTML = copyBtn.innerHTML;
+                // Show check text briefly
+                copyBtn.innerHTML =
+                    '<span class="text-xs font-bold text-green-600">Disalin!</span>';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHTML;
+                }, 2000);
+            });
+        }
+
+        // Tracker Logic
+        const lacakForm = document.getElementById(
+            "lacak-form",
+        ) as HTMLFormElement;
+        const inputResi = document.getElementById(
+            "input-resi",
+        ) as HTMLInputElement;
+        const lacakLoading = document.getElementById("lacak-loading");
+        const lacakError = document.getElementById("lacak-error");
+        const lacakResult = document.getElementById("lacak-result");
+
+        if (lacakForm) {
+            lacakForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const resiValue = inputResi.value.trim().toUpperCase();
+                const nikInput = document.getElementById(
+                    "input-nik-lacak",
+                ) as HTMLInputElement;
+                const nikValue = nikInput?.value.trim();
+
+                if (!resiValue && !nikValue) {
+                    alert(
+                        "Mohon isi salah satu: Nomor Resi atau NIK Anda untuk melakukan pelacakan.",
+                    );
+                    return;
+                }
+
+                // Reset views
+                lacakResult?.classList.add("hidden");
+                lacakError?.classList.add("hidden");
+                lacakLoading?.classList.remove("hidden");
+                lacakLoading?.classList.add("flex");
+
+                fetch(
+                    `/api/cek-resi?resi=${encodeURIComponent(resiValue)}&nik=${encodeURIComponent(nikValue)}`,
+                )
+                    .then((res) => res.json())
+                    .then((data) => {
+                        lacakLoading?.classList.remove("flex");
+                        lacakLoading?.classList.add("hidden");
+
+                        if (!data.success) {
+                            lacakError?.classList.remove("hidden");
+                            lacakError?.classList.add("flex");
+                        } else {
+                            const foundData = data.data;
+                            if (lacakResult) {
+                                let step = 1;
+                                if (foundData.status === "Diproses") step = 2;
+                                else if (foundData.status === "Selesai")
+                                    step = 4;
+                                else if (foundData.status === "Ditolak")
+                                    step = -1;
+
+                                const getStepClass = (targetStep: number) => {
+                                    if (step === -1) return "opacity-40";
+                                    if (step > targetStep) return "";
+                                    if (step === targetStep)
+                                        return "ring-4 ring-primary-100 animate-pulse";
+                                    return "opacity-40";
+                                };
+
+                                const getDotClass = (targetStep: number) => {
+                                    if (step === -1 && targetStep > 1)
+                                        return "bg-slate-200";
+                                    if (step > targetStep)
+                                        return "bg-green-500";
+                                    if (step === targetStep)
+                                        return "bg-primary-500";
+                                    return "bg-slate-200";
+                                };
+
+                                lacakResult.innerHTML = `
+                                <div class="bg-slate-50 border border-slate-200 p-6 rounded-2xl mb-8 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                                    <div>
+                                        <p class="text-sm text-slate-500 font-medium mb-1">Hasil Pelacakan untuk Resi:</p>
+                                        <h4 class="text-2xl font-black text-slate-800 tracking-wider">${foundData.resi}</h4>
+                                        <p class="text-sm text-slate-600 mt-1">Pemohon: <span class="font-semibold">${foundData.nama}</span></p>
+                                        <p class="text-xs text-slate-500">${foundData.jenisSurat}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="inline-flex px-3 py-1 rounded-full ${step === -1 ? "bg-red-100 text-red-700" : step === 4 ? "bg-green-100 text-green-700" : "bg-primary-100 text-primary-700"} font-bold text-xs uppercase">
+                                            STATUS: ${foundData.status}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="relative border-l-2 border-slate-200 ml-4 md:ml-8 space-y-12 pb-8">
+                                    <!-- Step 1 -->
+                                    <div class="relative pl-8">
+                                        <div class="absolute w-5 h-5 ${getDotClass(1)} rounded-full -left-[11px] top-1 border-4 border-white shadow-sm"></div>
+                                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-2">
+                                            <div>
+                                                <h5 class="font-bold text-slate-800 text-lg">Permohonan Diterima</h5>
+                                                <p class="text-slate-600 text-sm mt-1">Sistem telah menerima data permohonan Anda.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Step 2 -->
+                                    <div class="relative pl-8 ${getStepClass(2)}">
+                                        <div class="absolute w-5 h-5 ${getDotClass(2)} rounded-full -left-[11px] top-1 border-4 border-white shadow-sm"></div>
+                                        <div>
+                                            <h5 class="font-bold text-slate-700 text-lg">Verifikasi Berkas</h5>
+                                            <p class="text-slate-500 text-sm mt-1 max-w-sm">Staf administrasi desa sedang memeriksa kelengkapan data.</p>
+                                        </div>
+                                    </div>
+                                    <!-- Step 3 -->
+                                    <div class="relative pl-8 ${getStepClass(3)}">
+                                        <div class="absolute w-5 h-5 ${getDotClass(3)} rounded-full -left-[11px] top-1 border-4 border-white shadow-sm"></div>
+                                        <div>
+                                            <h5 class="font-bold text-slate-700 text-lg">Menunggu Tanda Tangan</h5>
+                                            <p class="text-slate-500 text-sm mt-1">Surat sedang diajukan untuk ditandatangani.</p>
+                                        </div>
+                                    </div>
+                                    <!-- Step 4 -->
+                                    <div class="relative pl-8 ${getStepClass(4)}">
+                                        <div class="absolute w-5 h-5 ${getDotClass(4)} rounded-full -left-[11px] top-1 border-4 border-white shadow-sm"></div>
+                                        <div>
+                                            <h5 class="font-bold text-slate-700 text-lg">Surat Selesai</h5>
+                                            <p class="text-slate-500 text-sm mt-1">Surat siap diambil di Kantor Balai Desa.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+                                lacakResult.classList.remove("hidden");
+                                lacakResult.classList.add("block");
+                            }
+                        }
+                    }, 800);
+            });
+        }
+
+        // Cek NIK Logic
+        const nikForm = document.getElementById(
+            "cek-nik-form",
+        ) as HTMLFormElement;
+        const inputNik = document.getElementById(
+            "input-nik",
+        ) as HTMLInputElement;
+        const nikLoading = document.getElementById("nik-loading");
+        const nikResultFound = document.getElementById("nik-result-found");
+        const nikResultNotFound = document.getElementById(
+            "nik-result-not-found",
+        );
+        const resNikText = document.getElementById("res-nik");
+
+        if (nikForm) {
+            nikForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+
+                const nikValue = inputNik.value.trim();
+                if (nikValue.length !== 16) return; // Basic validation check
+
+                // Reset views
+                nikResultFound?.classList.add("hidden");
+                nikResultNotFound?.classList.add("hidden");
+                nikLoading?.classList.remove("hidden");
+                nikLoading?.classList.add("flex");
+
+                setTimeout(() => {
+                    nikLoading?.classList.remove("flex");
+                    nikLoading?.classList.add("hidden");
+
+                    const bantuanDataRaw = nikForm.getAttribute("data-bantuan");
+                    const bantuanData = bantuanDataRaw
+                        ? JSON.parse(bantuanDataRaw)
+                        : [];
+
+                    const foundPenerima = bantuanData.find(
+                        (p: any) => p.nik === nikValue,
+                    );
+
+                    if (foundPenerima) {
+                        if (resNikText) {
+                            resNikText.textContent = `${nikValue.substring(0, 4)}********${nikValue.substring(12)} - ${foundPenerima.nama}`;
+                        }
+
+                        const programListDiv =
+                            document.getElementById("program-list");
+                        if (programListDiv) {
+                            if (
+                                foundPenerima.program &&
+                                foundPenerima.program.length > 0
+                            ) {
+                                let html = "";
+                                foundPenerima.program.forEach(
+                                    (prog: any, index: number) => {
+                                        const isLast =
+                                            index ===
+                                            foundPenerima.program.length - 1;
+                                        const borderClass = isLast
+                                            ? ""
+                                            : "pb-6 border-b border-slate-100";
+
+                                        let icon = "📋";
+                                        let bgClass =
+                                            "bg-slate-100 text-slate-600";
+                                        if (prog.kategori === "Uang Tunai") {
+                                            icon = "💵";
+                                            bgClass =
+                                                "bg-green-100 text-green-600";
+                                        } else if (
+                                            prog.kategori === "Bahan Pokok"
+                                        ) {
+                                            icon = "🌾";
+                                            bgClass =
+                                                "bg-yellow-100 text-yellow-600";
+                                        } else if (
+                                            prog.kategori === "Kesehatan"
+                                        ) {
+                                            icon = "🏥";
+                                            bgClass = "bg-red-100 text-red-600";
+                                        } else if (
+                                            prog.kategori === "Pendidikan"
+                                        ) {
+                                            icon = "🎓";
+                                            bgClass =
+                                                "bg-blue-100 text-blue-600";
+                                        }
+
+                                        let statusClass =
+                                            "bg-slate-100 text-slate-600";
+                                        if (prog.status === "Penerima Aktif")
+                                            statusClass =
+                                                "bg-green-100 text-green-700";
+                                        else if (prog.status === "Dalam Proses")
+                                            statusClass =
+                                                "bg-blue-100 text-blue-700";
+                                        else if (
+                                            prog.status === "Tidak Terdaftar" ||
+                                            prog.status === "Dibatalkan"
+                                        )
+                                            statusClass =
+                                                "bg-red-100 text-red-700";
+
+                                        html += `
+                                        <div class="flex flex-col md:flex-row items-center md:items-start gap-4 ${borderClass}">
+                                            <div class="w-14 h-14 rounded-full ${bgClass} flex items-center justify-center text-2xl shrink-0">
+                                                ${icon}
+                                            </div>
+                                            <div class="flex-1 text-left w-full">
+                                                <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                                                    <h6 class="font-bold text-slate-800 text-lg">
+                                                        ${prog.namaProgram}
+                                                    </h6>
+                                                    <span class="inline-flex px-3 py-1 rounded-full ${statusClass} font-bold text-xs mt-2 md:mt-0 w-max">
+                                                        ${prog.status}
+                                                    </span>
+                                                </div>
+                                                <p class="text-slate-600 text-sm">
+                                                    ${prog.keterangan || "-"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    `;
+                                    },
+                                );
+                                programListDiv.innerHTML = html;
+                            } else {
+                                programListDiv.innerHTML =
+                                    '<p class="text-slate-500 text-center py-4">Belum ada data program bantuan yang tercatat untuk warga ini.</p>';
+                            }
+                        }
+
+                        nikResultFound?.classList.remove("hidden");
+                        nikResultFound?.classList.add("block");
+                    } else {
+                        nikResultNotFound?.classList.remove("hidden");
+                        nikResultNotFound?.classList.add("flex");
+                    }
+                }, 1000);
+            });
+        }
+    }
+
+    // Initialize on direct hit and view transitions
+    initLayananMandiri();
+
+    document.addEventListener("astro:after-swap", initLayananMandiri);
+</script>

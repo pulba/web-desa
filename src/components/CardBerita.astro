@@ -1,0 +1,70 @@
+---
+interface Props {
+    slug: string;
+    title: string;
+    excerpt: string;
+    date: string;
+    image: string;
+    category: string;
+}
+
+const { slug, title, excerpt, date, image, category } = Astro.props;
+
+const formattedDate = new Date(date).toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+});
+---
+
+<article
+    class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col h-full"
+>
+    <a href={`/berita/${slug}`} class="block aspect-[4/3] overflow-hidden">
+        <img
+            src={image}
+            alt={title}
+            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+    </a>
+    <div class="p-6 flex flex-col flex-grow">
+        <div class="flex items-center space-x-2 mb-3">
+            <a
+                href={`/berita?category=${encodeURIComponent(category)}`}
+                class="px-2.5 py-0.5 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs font-bold rounded-full uppercase tracking-wider hover:bg-primary-100 dark:hover:bg-primary-900/50 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
+            >
+                {category}
+            </a>
+            <span class="text-slate-400 text-xs font-medium">
+                {formattedDate}
+            </span>
+        </div>
+        <h3
+            class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2"
+        >
+            <a href={`/berita/${slug}`}>{title}</a>
+        </h3>
+        <p class="text-slate-600 dark:text-slate-300 text-sm line-clamp-3 mb-6">
+            {excerpt}
+        </p>
+        <a
+            href={`/berita/${slug}`}
+            class="mt-auto pt-4 border-t border-slate-50 dark:border-slate-700 flex items-center text-primary-600 dark:text-primary-400 font-bold text-sm group/btn hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+        >
+            <span class="mr-2">Baca Selengkapnya</span>
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 transform group-hover/btn:translate-x-1 transition-transform"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+            </svg>
+        </a>
+    </div>
+</article>

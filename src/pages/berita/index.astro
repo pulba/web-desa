@@ -1,0 +1,412 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Container from "../../components/Container.astro";
+import SectionTitle from "../../components/SectionTitle.astro";
+import CardBerita from "../../components/CardBerita.astro";
+import Button from "../../components/Button.astro";
+import { getCollection, getEntry } from "astro:content";
+
+const allBerita = await getCollection("berita");
+const publishedBerita = allBerita.filter((berita) => {
+    const data = berita.data as any;
+    const isPublished = data.status === "Published";
+    const isScheduledVisible =
+        data.status === "Scheduled" && new Date(data.date) <= new Date();
+    return isPublished || isScheduledVisible;
+});
+const sortedBerita = publishedBerita.sort(
+    (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
+
+// Read categories from settings
+const settingsEntry = await getEntry("settings", "main");
+const kategoriBerita = settingsEntry?.data?.kategoriBerita || [
+    "Kegiatan Desa",
+    "Ekonomi",
+    "Sosial",
+    "Pembangunan",
+    "Pengumuman",
+];
+const categories = ["Semua", ...kategoriBerita];
+---
+
+<MainLayout title="Berita Desa">
+    <!-- Hero Section -->
+    <section
+        class="relative bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 py-24 overflow-hidden"
+    >
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-10">
+            <div
+                class="absolute top-0 left-0 w-72 h-72 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"
+            >
+            </div>
+            <div
+                class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/3 translate-y-1/3"
+            >
+            </div>
+            <div
+                class="absolute top-1/2 left-1/2 w-48 h-48 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"
+            >
+            </div>
+        </div>
+        <!-- Floating Icons -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div
+                class="absolute top-16 left-[10%] text-white/10 text-6xl animate-float-slow"
+            >
+                📰
+            </div>
+            <div
+                class="absolute top-28 right-[15%] text-white/10 text-5xl animate-float-medium"
+            >
+                📢
+            </div>
+            <div
+                class="absolute bottom-12 left-[20%] text-white/10 text-4xl animate-float-fast"
+            >
+                🗞️
+            </div>
+            <div
+                class="absolute bottom-20 right-[25%] text-white/10 text-5xl animate-float-slow"
+            >
+                📸
+            </div>
+        </div>
+        <Container className="relative z-10 text-center">
+            <h1
+                class="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight"
+            >
+                Kabar <span class="text-primary-200">Desa</span>
+            </h1>
+            <p
+                class="text-primary-100 text-lg max-w-2xl mx-auto leading-relaxed"
+            >
+                Menyajikan informasi terbaru, pengumuman penting, dan dinamika
+                kegiatan di lingkungan pemerintah maupun masyarakat Desa Makmur.
+            </p>
+        </Container>
+    </section>
+
+    <section class="section-padding bg-slate-50 pb-20">
+        <Container>
+            <!-- Categories Filter -->
+            <div class="flex flex-wrap gap-2 mb-12 justify-center">
+                {
+                    categories.map((cat, i) => (
+                        <button
+                            data-category={cat}
+                            class={`category-btn px-6 py-2.5 rounded-full text-sm font-bold transition-all ${
+                                i === 0
+                                    ? "bg-primary-600 text-white shadow-lg shadow-primary-200 active"
+                                    : "bg-white border border-slate-200 text-slate-600 hover:border-primary-500 hover:text-primary-600"
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))
+                }
+            </div>
+
+            <!-- Grid -->
+            <div
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
+            >
+                {
+                    sortedBerita.map((berita) => (
+                        <div
+                            class="news-item h-full"
+                            data-title={berita.data.title.toLowerCase()}
+                            data-category={berita.data.category}
+                        >
+                            <CardBerita
+                                title={berita.data.title}
+                                excerpt={berita.data.excerpt || ""}
+                                date={berita.data.date.toString()}
+                                image={berita.data.image || ""}
+                                category={
+                                    berita.data.category || "Uncategorized"
+                                }
+                                slug={berita.slug}
+                            />
+                        </div>
+                    ))
+                }
+            </div>
+
+            <!-- Pagination Container -->
+            <div
+                id="pagination-container"
+                class="flex justify-center items-center space-x-2"
+            >
+                <!-- Pagination will be injected here by JS -->
+            </div>
+        </Container>
+    </section>
+
+    <script is:inline>
+        document.addEventListener("astro:page-load", initBerita);
+        document.addEventListener("DOMContentLoaded", initBerita);
+
+        function initBerita() {
+            const categoryBtns = document.querySelectorAll(".category-btn");
+            const newsItems = document.querySelectorAll(".news-item");
+            const paginationContainer = document.getElementById(
+                "pagination-container",
+            );
+
+            if (!paginationContainer) return;
+
+            // Get params from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialSearch = urlParams.get("search");
+            const initialCategory = urlParams.get("category");
+
+            let currentCategory = initialCategory || "Semua";
+            let searchTerm = initialSearch || "";
+            let currentPage = 1;
+            const itemsPerPage = 6;
+            let visibleItems = Array.from(newsItems);
+
+            // Update active category button
+            if (initialCategory) {
+                categoryBtns.forEach((btn) => {
+                    if (btn.getAttribute("data-category") === initialCategory) {
+                        btn.classList.add(
+                            "bg-primary-600",
+                            "text-white",
+                            "shadow-lg",
+                            "shadow-primary-200",
+                            "active",
+                        );
+                        btn.classList.remove(
+                            "bg-white",
+                            "border",
+                            "border-slate-200",
+                            "text-slate-600",
+                            "hover:border-primary-500",
+                            "hover:text-primary-600",
+                        );
+                    } else {
+                        btn.classList.remove(
+                            "bg-primary-600",
+                            "text-white",
+                            "shadow-lg",
+                            "shadow-primary-200",
+                            "active",
+                        );
+                        btn.classList.add(
+                            "bg-white",
+                            "border",
+                            "border-slate-200",
+                            "text-slate-600",
+                            "hover:border-primary-500",
+                            "hover:text-primary-600",
+                        );
+                    }
+                });
+            }
+
+            // Execute initial filter if params exist
+            if (initialSearch || initialCategory) {
+                // We need to wait for DOM to be fully ready or just run it
+                setTimeout(filterNews, 0);
+            }
+
+            // Filter Function
+            function filterNews() {
+                const term = searchTerm.toLowerCase();
+                visibleItems = [];
+
+                newsItems.forEach((item) => {
+                    const title = item.getAttribute("data-title");
+                    const category = item.getAttribute("data-category");
+
+                    const matchesSearch = title.includes(term);
+                    const matchesCategory =
+                        currentCategory === "Semua" ||
+                        category === currentCategory;
+
+                    if (matchesSearch && matchesCategory) {
+                        item.classList.remove("hidden");
+                        visibleItems.push(item);
+                    } else {
+                        item.classList.add("hidden");
+                    }
+                });
+
+                // Reset to page 1 after filter
+                currentPage = 1;
+                renderPagination();
+                updateVisibility();
+                updateNoResults();
+            }
+
+            function updateVisibility() {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+
+                visibleItems.forEach((item, index) => {
+                    if (index >= start && index < end) {
+                        item.classList.remove("hidden"); // Ensure it's visible if it matches filter
+                        item.style.display = ""; // Reset display property
+                    } else {
+                        item.style.display = "none"; // Hide completely for pagination
+                    }
+                });
+            }
+
+            function updateNoResults() {
+                let noResultMsg = document.getElementById("no-results-msg");
+                if (visibleItems.length === 0) {
+                    if (!noResultMsg) {
+                        noResultMsg = document.createElement("div");
+                        noResultMsg.id = "no-results-msg";
+                        noResultMsg.className =
+                            "col-span-1 md:col-span-2 lg:col-span-3 text-center py-12";
+                        noResultMsg.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-slate-500 font-medium">Tidak ada berita yang ditemukan untuk pencarian "${searchTerm}".</p>
+                        `;
+                        newsItems[0]?.parentElement?.appendChild(noResultMsg);
+                    } else {
+                        // Update message if it exists
+                        const p = noResultMsg.querySelector("p");
+                        if (p)
+                            p.textContent = `Tidak ada berita yang ditemukan untuk pencarian "${searchTerm}".`;
+                    }
+                    noResultMsg.style.display = "block";
+                } else {
+                    if (noResultMsg) noResultMsg.style.display = "none";
+                }
+            }
+
+            function renderPagination() {
+                const totalPages = Math.ceil(
+                    visibleItems.length / itemsPerPage,
+                );
+                paginationContainer.innerHTML = "";
+
+                if (totalPages <= 1) return;
+
+                // Prev Button
+                const prevBtn = createPageBtn(
+                    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>`,
+                    () => changePage(currentPage - 1),
+                    currentPage === 1,
+                );
+                paginationContainer.appendChild(prevBtn);
+
+                // Page Numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = createPageBtn(
+                        i,
+                        () => changePage(i),
+                        false,
+                        i === currentPage,
+                    );
+                    paginationContainer.appendChild(pageBtn);
+                }
+
+                // Next Button
+                const nextBtn = createPageBtn(
+                    `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>`,
+                    () => changePage(currentPage + 1),
+                    currentPage === totalPages,
+                );
+                paginationContainer.appendChild(nextBtn);
+            }
+
+            function createPageBtn(
+                content,
+                onClick,
+                disabled = false,
+                active = false,
+            ) {
+                const btn = document.createElement("button");
+                btn.innerHTML = content;
+                btn.disabled = disabled;
+
+                if (active) {
+                    btn.className =
+                        "w-10 h-10 flex items-center justify-center rounded-lg bg-primary-600 text-white font-bold shadow-lg shadow-primary-200 transition-all";
+                } else {
+                    btn.className = `w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 transition-colors ${disabled ? "text-slate-300 cursor-not-allowed" : "text-slate-600 hover:border-primary-600 hover:text-primary-600"}`;
+                }
+
+                if (!disabled) {
+                    btn.onclick = onClick;
+                }
+                return btn;
+            }
+
+            function changePage(page) {
+                currentPage = page;
+                updateVisibility();
+                renderPagination();
+                // Scroll to top of grid
+                document.querySelector(".grid").scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }
+
+            // Event Listeners
+            categoryBtns.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    // Update active state
+                    categoryBtns.forEach((b) => {
+                        b.classList.remove(
+                            "bg-primary-600",
+                            "text-white",
+                            "shadow-lg",
+                            "shadow-primary-200",
+                            "active",
+                        );
+                        b.classList.add(
+                            "bg-white",
+                            "border",
+                            "border-slate-200",
+                            "text-slate-600",
+                            "hover:border-primary-500",
+                            "hover:text-primary-600",
+                        );
+                    });
+                    btn.classList.remove(
+                        "bg-white",
+                        "border",
+                        "border-slate-200",
+                        "text-slate-600",
+                        "hover:border-primary-500",
+                        "hover:text-primary-600",
+                    );
+                    btn.classList.add(
+                        "bg-primary-600",
+                        "text-white",
+                        "shadow-lg",
+                        "shadow-primary-200",
+                        "active",
+                    );
+
+                    currentCategory = btn.getAttribute("data-category");
+
+                    // Update URL without reload
+                    const newUrl = new URL(window.location);
+                    if (currentCategory !== "Semua") {
+                        newUrl.searchParams.set("category", currentCategory);
+                    } else {
+                        newUrl.searchParams.delete("category");
+                    }
+                    window.history.pushState({}, "", newUrl);
+
+                    filterNews();
+                });
+            });
+
+            // Initial render
+            filterNews();
+        }
+    </script>
+</MainLayout>

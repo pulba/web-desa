@@ -1,0 +1,232 @@
+---
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import FloatingAction from "../components/FloatingAction.astro";
+import { getEntry } from "astro:content";
+import { SEO } from "astro-seo";
+
+interface Props {
+	title?: string; // Made optional to fallback to defaultTitle
+	description?: string;
+	image?: string;
+	type?: "website" | "article";
+}
+
+const {
+	title: propTitle,
+	description: propDescription,
+	image,
+	type = "website",
+} = Astro.props;
+const settingsEntry = await getEntry("settings", "main");
+const settings = settingsEntry?.data;
+const seoSettings = settings?.seo;
+
+const siteName = settings?.siteName || "Desa Makmur";
+
+// SEO Fallbacks from TinaCMS
+const title = propTitle || seoSettings?.defaultTitle || "Beranda";
+const titleTemplate = seoSettings?.titleTemplate || "%s | " + siteName;
+const description =
+	propDescription ||
+	seoSettings?.defaultDescription ||
+	`Website Resmi ${siteName} - Memberikan pelayanan informasi terbaik bagi masyarakat.`;
+
+const primaryColor = settings?.theme?.primaryColor || "#16a34a";
+const secondaryColor = settings?.theme?.secondaryColor || "#15803d";
+
+const currentUrl = Astro.url.href;
+// Favicon handling (add ?v=timestamp to bust aggressive browser cache)
+const rawFaviconUrl = seoSettings?.favicon || "/favicon.svg";
+const faviconUrl = `${rawFaviconUrl}?v=${new Date().getTime()}`;
+
+// OG Image handling
+const defaultImage = new URL(
+	seoSettings?.ogImage || settings?.logo || "/favicon.svg",
+	Astro.url,
+).href;
+const seoImage = image ? new URL(image, Astro.url).href : defaultImage;
+
+// Pre-compute Schema.org JSON-LD
+const schemaLD = {
+	"@context": "https://schema.org",
+	"@type": type === "article" ? "Article" : "GovernmentOrganization",
+	name: siteName,
+	url: new URL("/", Astro.url).href,
+	logo: defaultImage,
+	description: description,
+};
+if (type === "article") {
+	schemaLD["headline"] = title;
+	schemaLD["image"] = seoImage;
+	schemaLD["publisher"] = {
+		"@type": "Organization",
+		name: siteName,
+		logo: {
+			"@type": "ImageObject",
+			url: defaultImage,
+		},
+	};
+}
+---
+
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type={rawFaviconUrl.endsWith(".svg") ? "image/svg+xml" : rawFaviconUrl.endsWith(".png") ? "image/png" : "image/x-icon"} href={faviconUrl} />
+		<meta name="generator" content={Astro.generator} />
+
+		<!-- Prevent FOUC for Dark Mode -->
+		<script is:inline>
+			const theme = (() => {
+				if (
+					typeof localStorage !== "undefined" &&
+					localStorage.getItem("theme")
+				) {
+					return localStorage.getItem("theme");
+				}
+				if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+					return "dark";
+				}
+				return "light";
+			})();
+
+			if (theme === "dark") {
+				document.documentElement.classList.add("dark");
+			} else {
+				document.documentElement.classList.remove("dark");
+			}
+			window.localStorage.setItem("theme", theme);
+		</script>
+
+		<!-- Astro SEO -->
+		<SEO
+			title={title}
+			titleTemplate={titleTemplate}
+			description={description}
+			openGraph={{
+				basic: {
+					title: `${title} | ${siteName}`,
+					type: type,
+					image: seoImage,
+					url: currentUrl,
+				},
+				optional: {
+					description: description,
+					siteName: siteName,
+				},
+			}}
+			twitter={{
+				card: "summary_large_image",
+				site: siteName,
+				title: `${title} | ${siteName}`,
+				description: description,
+				image: seoImage,
+			}}
+		/>
+
+		<!-- Google Analytics (GA4) -->
+		{
+			seoSettings?.googleAnalyticsId && (
+				<>
+					<script
+						type="text/partytown"
+						src={`https://www.googletagmanager.com/gtag/js?id=${seoSettings.googleAnalyticsId}`}
+					/>
+					<script type="text/partytown" define:vars={{ gaId: seoSettings.googleAnalyticsId }}>
+						window.dataLayer = window.dataLayer || [];
+						function gtag() {
+							dataLayer.push(arguments);
+						}
+						gtag("js", new Date());
+						gtag("config", gaId);
+					</script>
+				</>
+			)
+		}
+		
+		<!-- Additional SEO Keywords -->
+		{
+			seoSettings?.defaultKeywords && (
+				<meta name="keywords" content={seoSettings.defaultKeywords} />
+			)
+		}
+
+		<!-- JSON-LD Schema -->
+		<script
+			type="application/ld+json"
+			set:html={JSON.stringify(schemaLD)}
+		/>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<style define:vars={{ primaryColor, secondaryColor }}>
+			:root {
+				--primary-600: var(--primaryColor);
+				--primary-700: var(--secondaryColor);
+				/* Fallbacks for other shades using color-mix */
+				--primary-50: color-mix(
+					in srgb,
+					var(--primaryColor),
+					white 95%
+				);
+				--primary-100: color-mix(
+					in srgb,
+					var(--primaryColor),
+					white 90%
+				);
+				--primary-200: color-mix(
+					in srgb,
+					var(--primaryColor),
+					white 70%
+				);
+				--primary-300: color-mix(
+					in srgb,
+					var(--primaryColor),
+					white 50%
+				);
+				--primary-400: color-mix(
+					in srgb,
+					var(--primaryColor),
+					white 30%
+				);
+				--primary-500: color-mix(
+					in srgb,
+					var(--primaryColor),
+					white 10%
+				);
+				--primary-800: color-mix(
+					in srgb,
+					var(--primaryColor),
+					black 20%
+				);
+				--primary-900: color-mix(
+					in srgb,
+					var(--primaryColor),
+					black 40%
+				);
+				--primary-950: color-mix(
+					in srgb,
+					var(--primaryColor),
+					black 60%
+				);
+			}
+		</style>
+	</head>
+	<body
+		class="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300"
+	>
+		<Navbar />
+		<main class="flex-grow">
+			<slot />
+		</main>
+		<Footer />
+		<FloatingAction phoneNumber={settings?.phone || "6281234567890"} />
+	</body>
+</html>

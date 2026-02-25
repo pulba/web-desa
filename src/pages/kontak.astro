@@ -1,0 +1,169 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Container from "../components/Container.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+import Button from "../components/Button.astro";
+import { getEntry } from "astro:content";
+
+const settingsEntry = await getEntry("settings", "main");
+const settings = settingsEntry?.data;
+---
+
+<MainLayout title="Hubungi Kami">
+    <section class="bg-primary-900 py-32 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <img
+                src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=1600"
+                class="w-full h-full object-cover"
+            />
+        </div>
+        <Container className="relative z-10 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                Hubungi Kami
+            </h1>
+            <p class="text-primary-100 text-lg max-w-2xl mx-auto">
+                Ada pertanyaan atau perlu bantuan? Tim kami siap melayani Anda.
+                Sampaikan aspirasi atau kendala Anda melalui formulir di bawah
+                ini.
+            </p>
+        </Container>
+    </section>
+
+    <section class="section-padding">
+        <Container>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                <!-- Form -->
+                <div
+                    class="bg-white p-8 md:p-12 rounded-3xl border border-slate-100 shadow-xl"
+                >
+                    <SectionTitle title="Kirim Pesan" className="mb-8" />
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label
+                                    class="block text-sm font-bold text-slate-700 mb-2"
+                                    >Nama Lengkap</label
+                                >
+                                <input
+                                    type="text"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-all"
+                                    placeholder="Masukkan nama Anda"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-sm font-bold text-slate-700 mb-2"
+                                    >Email</label
+                                >
+                                <input
+                                    type="email"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-all"
+                                    placeholder="email@contoh.com"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-bold text-slate-700 mb-2"
+                                >Subjek</label
+                            >
+                            <select
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-all"
+                            >
+                                <option>Layanan Administrasi</option>
+                                <option>Keluhan / Aspirasi</option>
+                                <option>Informasi UMKM</option>
+                                <option>Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-bold text-slate-700 mb-2"
+                                >Pesan</label
+                            >
+                            <textarea
+                                rows="5"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-all"
+                                placeholder="Tuliskan pesan Anda di sini..."
+                            ></textarea>
+                        </div>
+                        <Button
+                            className="w-full py-4 text-lg shadow-lg shadow-primary-200"
+                            >Kirim Pesan Sekarang</Button
+                        >
+                    </form>
+                </div>
+
+                <!-- Info -->
+                <div class="space-y-12">
+                    <div>
+                        <SectionTitle title="Informasi Kontak" />
+                        <div class="space-y-6 mt-8">
+                            {
+                                [
+                                    {
+                                        icon: "📍",
+                                        label: "Alamat Kantor",
+                                        val:
+                                            settings?.address ||
+                                            "Jl. Raya Makmur No. 123, Kec. Sejahtera, Kab. Sejahtera, 12345",
+                                    },
+                                    {
+                                        icon: "📞",
+                                        label: "Telepon / WhatsApp",
+                                        val:
+                                            settings?.phone ||
+                                            "(021) 12345678 / 0812-3456-7890",
+                                    },
+                                    {
+                                        icon: "✉️",
+                                        label: "Email Resmi",
+                                        val:
+                                            settings?.email ||
+                                            "info@desamakmur.go.id",
+                                    },
+                                    {
+                                        icon: "⏰",
+                                        label: "Jam Operasional",
+                                        val: "Senin - Jumat: 08.00 - 15.00 WIB",
+                                    },
+                                ].map((item) => (
+                                    <div class="flex items-start space-x-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <span class="text-3xl">
+                                            {item.icon}
+                                        </span>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 uppercase tracking-widest text-[10px] mb-1">
+                                                {item.label}
+                                            </h4>
+                                            <p class="text-slate-600 leading-relaxed font-medium">
+                                                {item.val}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Maps Placeholder -->
+                    {
+                        settings?.googleMapsUrl && (
+                            <div class="aspect-video bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 relative group">
+                                <iframe
+                                    src={settings.googleMapsUrl}
+                                    width="100%"
+                                    height="100%"
+                                    class="absolute inset-0 border-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    allowfullscreen=""
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                />
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+        </Container>
+    </section>
+</MainLayout>

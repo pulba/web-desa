@@ -1,0 +1,282 @@
+{
+    "idm": {
+        "tahun": "2024",
+        "status": "Mandiri",
+        "skor": 0.8286,
+        "targetStatus": "Mandiri",
+        "skorMinimal": 0.8156,
+        "penambahan": -0.0130,
+        "iks": 0.8857,
+        "ike": 0.6667,
+        "ikl": 0.9333,
+        "riwayatSkor": [
+            {
+                "tahun": "2019",
+                "skor": 55
+            },
+            {
+                "tahun": "2020",
+                "skor": 65
+            },
+            {
+                "tahun": "2021",
+                "skor": 72
+            },
+            {
+                "tahun": "2022",
+                "skor": 80
+            },
+            {
+                "tahun": "2023",
+                "skor": 88
+            },
+            {
+                "tahun": "2024",
+                "skor": 94
+            }
+        ],
+        "indicators": [
+            {
+                "group": "IKS",
+                "indicator": "Akses ke Sarana Kesehatan terdekat",
+                "score": 5,
+                "keterangan": "Dapat ditempuh dalam waktu kurang dari 30 menit",
+                "kegiatan": "Pemeliharaan Posyandu dan Ambulans Desa",
+                "nilaiPlus": 0.003,
+                "stakeholders": "DD, Dinkes"
+            },
+            {
+                "group": "IKS",
+                "indicator": "Ketersediaan Tenaga Kesehatan (Bidan)",
+                "score": 5,
+                "keterangan": "Bidan menetap di desa",
+                "kegiatan": "Penyediaan Rumah Dinas Bidan",
+                "nilaiPlus": 0.003,
+                "stakeholders": "DD"
+            },
+            {
+                "group": "IKE",
+                "indicator": "Keragaman Produksi Masyarakat Desa",
+                "score": 4,
+                "keterangan": "Terdapat lebih dari 2 komoditas utama",
+                "kegiatan": "Pelatihan Pengolahan Hasil Tani",
+                "nilaiPlus": 0.005,
+                "stakeholders": "DD, Disperindag"
+            },
+            {
+                "group": "IKE",
+                "indicator": "Akses ke Pusat Perdagangan (Pasar)",
+                "score": 3,
+                "keterangan": "Jarak ke pasar terdekat > 5km",
+                "kegiatan": "Pembangunan Los Pasar Desa",
+                "nilaiPlus": 0.008,
+                "stakeholders": "DD, PU"
+            },
+            {
+                "group": "IKL",
+                "indicator": "Kualitas Lingkungan",
+                "score": 5,
+                "keterangan": "Tidak ada pencemaran air dan udara",
+                "kegiatan": "Program Kali Bersih",
+                "nilaiPlus": 0.002,
+                "stakeholders": "DD, BLH"
+            },
+            {
+                "group": "IKL",
+                "indicator": "Tanggap Bencana",
+                "score": 4,
+                "keterangan": "Memiliki jalur evakuasi namun rambu terbatas",
+                "kegiatan": "Pemasangan Rambu Jalur Evakuasi",
+                "nilaiPlus": 0.004,
+                "stakeholders": "DD, BPBD"
+            }
+        ]
+    },
+    "apbdes": {
+        "tahun": "2023",
+        "persentaseRealisasi": 92,
+        "fileLaporan": "",
+        "rincianBelanja": [
+            {
+                "bidang": "Penyelenggaraan Pemerintah",
+                "anggaran": "Rp 450.000.000",
+                "persentase": "32%",
+                "warna": "bg-blue-500"
+            },
+            {
+                "bidang": "Pembangunan Desa",
+                "anggaran": "Rp 820.000.000",
+                "persentase": "59%",
+                "warna": "bg-primary-500"
+            },
+            {
+                "bidang": "Pembinaan Masyarakat",
+                "anggaran": "Rp 120.000.000",
+                "persentase": "9%",
+                "warna": "bg-amber-500"
+            }
+        ]
+    },
+    "penduduk": {
+        "periode": "Semester I - 2024",
+        "lakiLaki": 2150,
+        "perempuan": 2100,
+        "agama": [
+            {
+                "agama": "Islam",
+                "jumlah": "3.950",
+                "persentase": "93%"
+            },
+            {
+                "agama": "Kristen",
+                "jumlah": "200",
+                "persentase": "5%"
+            },
+            {
+                "agama": "Katolik",
+                "jumlah": "80",
+                "persentase": "1.5%"
+            },
+            {
+                "agama": "Lainnya",
+                "jumlah": "20",
+                "persentase": "0.5%"
+            }
+        ]
+    },
+    "stunting": {
+        "tren": "TREN MENURUN",
+        "targetTahunIni": 8.0,
+        "anakTerdampak": 14,
+        "dataTahunan": [
+            {
+                "tahun": "2021",
+                "persentase": 24.5
+            },
+            {
+                "tahun": "2022",
+                "persentase": 18.2
+            },
+            {
+                "tahun": "2023",
+                "persentase": 12.8
+            },
+            {
+                "tahun": "2024",
+                "persentase": 8.5
+            }
+        ]
+    },
+    "sdgs": {
+        "daftarPencapaian": [
+            {
+                "tujuan": "Desa Tanpa Kemiskinan",
+                "skor": 85,
+                "bgColor": "bg-red-500",
+                "textColor": "text-red-600"
+            },
+            {
+                "tujuan": "Desa Tanpa Kelaparan",
+                "skor": 90,
+                "bgColor": "bg-amber-500",
+                "textColor": "text-amber-600"
+            },
+            {
+                "tujuan": "Desa Sehat & Sejahtera",
+                "skor": 78,
+                "bgColor": "bg-green-500",
+                "textColor": "text-green-600"
+            },
+            {
+                "tujuan": "Pendidikan Berkualitas",
+                "skor": 82,
+                "bgColor": "bg-red-600",
+                "textColor": "text-red-600"
+            },
+            {
+                "tujuan": "Keterlibatan Perempuan",
+                "skor": 88,
+                "bgColor": "bg-pink-500",
+                "textColor": "text-pink-600"
+            },
+            {
+                "tujuan": "Desa Layak Air Bersih",
+                "skor": 95,
+                "bgColor": "bg-cyan-500",
+                "textColor": "text-cyan-600"
+            },
+            {
+                "tujuan": "Pertumbuhan Ekonomi",
+                "skor": 75,
+                "bgColor": "bg-blue-600",
+                "textColor": "text-blue-600"
+            },
+            {
+                "tujuan": "Infrastruktur & Inovasi",
+                "skor": 70,
+                "bgColor": "bg-orange-500",
+                "textColor": "text-orange-600"
+            }
+        ]
+    },
+    "bansos": {
+        "statusPenyaluran": "Penyaluran Aktif",
+        "periode": "Distribusi Program Kejahteraan Masyarakat 2024",
+        "program": [
+            {
+                "nama": "BLT Dana Desa",
+                "jumlah": "125",
+                "satuan": "KPM",
+                "icon": "💶",
+                "warnaCss": "bg-blue-50 text-blue-700 border-blue-200"
+            },
+            {
+                "nama": "PKH",
+                "jumlah": "340",
+                "satuan": "KPM",
+                "icon": "💳",
+                "warnaCss": "bg-purple-50 text-purple-700 border-purple-200"
+            },
+            {
+                "nama": "BPNT (Sembako)",
+                "jumlah": "450",
+                "satuan": "KPM",
+                "icon": "🌾",
+                "warnaCss": "bg-amber-50 text-amber-700 border-amber-200"
+            },
+            {
+                "nama": "Bansos Beras",
+                "jumlah": "450",
+                "satuan": "KPM",
+                "icon": "🍚",
+                "warnaCss": "bg-emerald-50 text-emerald-700 border-emerald-200"
+            }
+        ]
+    },
+    "stats": [
+        {
+            "label": "Total Penduduk",
+            "value": "4.250",
+            "unit": "Jiwa",
+            "icon": "users"
+        },
+        {
+            "label": "Luas Wilayah",
+            "value": "850",
+            "unit": "Ha",
+            "icon": "map"
+        },
+        {
+            "label": "Jumlah Dusun",
+            "value": "6",
+            "unit": "Dusun",
+            "icon": "home"
+        },
+        {
+            "label": "Jumlah UMKM",
+            "value": "124",
+            "unit": "Usaha",
+            "icon": "shopping-bag"
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+  "siteName": "Desa Makmur",
+  "siteUrl": "https://desamakmur.go.id",
+  "kabupaten": "Kabupaten Sejahtera",
+  "address": "Jl. Raya Makmur No. 123, Kec. Sejahtera, Kab. Sejahtera, 12345",
+  "phone": "(021) 12345678",
+  "whatsappLayanan": "6281234567890",
+  "email": "info@desamakmur.go.id",
+  "logo": "/uploads/ed404932-449b-44b0-9a2b-e46fb429c0f1_removalai_preview.webp",
+  "social": {
+    "facebook": "https://facebook.com/desamakmur",
+    "instagram": "https://instagram.com/desamakmur",
+    "youtube": "https://youtube.com/desamakmur"
+  },
+  "googleMapsUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3343.0240307863846!2d104.9028822705737!3d-4.8473906812261776!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e38a90896dd9fd5%3A0x82d173f6d4e7529d!2s5W33%2B8WW%2C%20Klp.%20Tujuh%2C%20Kec.%20Kotabumi%20Sel.%2C%20Kabupaten%20Lampung%20Utara%2C%20Lampung%2034514!5e0!3m2!1sid!2sid!4v1771483634828!5m2!1sid!2sid",
+  "theme": {
+    "primaryColor": "#076A04",
+    "secondaryColor": "#417505"
+  },
+  "kategoriBerita": [
+    "Kegiatan Desa",
+    "Ekonomi",
+    "Sosial",
+    "Pembangunan",
+    "Pengumuman"
+  ],
+  "kategoriUMKM": [
+    "Makanan",
+    "Kerajinan",
+    "Pertanian",
+    "Minuman"
+  ],
+  "kategoriGaleri": [
+    "Alam",
+    "Kegiatan",
+    "Infrastruktur",
+    "Ekonomi",
+    "Lainnya"
+  ],
+  "seo": {
+    "favicon": "/uploads/ed404932-449b-44b0-9a2b-e46fb429c0f1_removalai_preview.webp",
+    "ogImage": "/uploads/ChatGPT Image Feb 25, 2026, 02_29_37 PM.webp"
+  }
+}

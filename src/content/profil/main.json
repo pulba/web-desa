@@ -1,0 +1,83 @@
+{
+  "hero": {
+    "title": "Profil Desa",
+    "subtitle": "Mengenal lebih dekat sejarah, visi misi, dan struktur pemerintahan Desa Makmur.",
+    "image": "/uploads/ChatGPT Image Feb 25, 2026, 02_29_37 PM.webp"
+  },
+  "sejarah": "Desa Makmur didirikan pada tahun 1920-an oleh sekelompok perintis yang membuka lahan hutan menjadi area persawahan yang subur. Nama \"Makmur\" diberikan sebagai doa agar kelak desa ini menjadi tempat yang memberikan kesejahteraan bagi seluruh penghuninya.\n\nSeiring berjalannya waktu, Desa Makmur berkembang menjadi pusat perdagangan hasil bumi di wilayah kecamatan. Kekayaan alam berupa tanah yang subur dan sumber mata air yang melimpah menjadi fondasi utama pembangunan desa hingga saat ini.",
+  "visiMisi": {
+    "visi": "Terwujudnya Desa Makmur yang Mandiri, Sejahtera, Berkualitas, Tinggi dalam Akhlakul Karimah, dan Transparan dalam Tata Kelola.",
+    "misi": [
+      "Meningkatkan kualitas pelayanan publik melalui sistem digital.",
+      "Pembangunan infrastruktur desa yang merata and berkelanjutan.",
+      "Mengoptimalkan peran BUMDES dalam pemberdayaan ekonomi warga.",
+      "Meningkatkan kualitas sumber daya manusia melalui pelatihan.",
+      "Mewujudkan lingkungan desa yang bersih, sehat, and asri."
+    ]
+  },
+  "organisasiImage": "/uploads/ChatGPT Image Feb 25, 2026, 03_22_19 PM.webp",
+  "wilayah": [
+    {
+      "name": "Dusun Krajan",
+      "kepala": "Bpk. Slamet",
+      "penduduk": "850 Jiwa"
+    },
+    {
+      "name": "Dusun Mulyo",
+      "kepala": "Bpk. Ahmad",
+      "penduduk": "720 Jiwa"
+    },
+    {
+      "name": "Dusun Rejo",
+      "kepala": "Bpk. Bambang",
+      "penduduk": "680 Jiwa"
+    },
+    {
+      "name": "Dusun Sari",
+      "kepala": "Ibu Wahyu",
+      "penduduk": "750 Jiwa"
+    },
+    {
+      "name": "Dusun Makmur Utara",
+      "kepala": "Bpk. Toto",
+      "penduduk": "600 Jiwa"
+    },
+    {
+      "name": "Dusun Makmur Selatan",
+      "kepala": "Bpk. Joko",
+      "penduduk": "650 Jiwa"
+    }
+  ],
+  "perangkat": [
+    {
+      "name": "Ir. H. Sudirman, M.Si.",
+      "position": "Kepala Desa",
+      "image": "/uploads/ChatGPT Image Feb 25, 2026, 02_31_45 PM.webp"
+    },
+    {
+      "name": "Hardianto, S.Sos",
+      "position": "Sekretaris Desa",
+      "image": "/uploads/ChatGPT Image Feb 25, 2026, 03_31_23 PM.webp"
+    },
+    {
+      "name": "Asep Syahroni",
+      "position": "Kepala Seksi Pemerintahan",
+      "image": "/uploads/ChatGPT Image Feb 25, 2026, 03_56_17 PM.webp"
+    },
+    {
+      "name": "Indra Hermawan",
+      "position": "Kepala Seksi Kesejahteraan",
+      "image": "/uploads/ChatGPT Image Feb 25, 2026, 04_00_01 PM.webp"
+    },
+    {
+      "name": "Nur Rahman",
+      "position": "Kepala Seksi Pelayanan",
+      "image": "/uploads/ChatGPT Image Feb 25, 2026, 04_00_05 PM.webp"
+    },
+    {
+      "name": "Aswandi",
+      "position": "Kepala Seksi Trantib",
+      "image": "/uploads/ChatGPT Image Feb 25, 2026, 04_01_14 PM.webp"
+    }
+  ]
+}

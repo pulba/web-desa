@@ -1,0 +1,199 @@
+---
+import Container from "./Container.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+import { getEntry } from "astro:content";
+
+const settingsEntry = await getEntry("settings", "main");
+const settings = settingsEntry?.data;
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) => {
+    if (href === "/") return currentPath === "/";
+    return currentPath.startsWith(href);
+};
+
+const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/profil", label: "Profil" },
+    { href: "/berita", label: "Berita" },
+    { href: "/infografis", label: "Infografis" },
+    { href: "/ppid", label: "PPID" },
+    { href: "/layanan", label: "Layanan" },
+    { href: "/belanja", label: "UMKM" },
+    { href: "/kontak", label: "Kontak" },
+];
+---
+
+<header
+    class="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-300"
+>
+    <Container>
+        <div class="flex items-center justify-between h-20 relative">
+            <!-- Logo -->
+            <a href="/" class="flex items-center space-x-3 group">
+                {
+                    settings?.logo ? (
+                        <img
+                            src={settings.logo}
+                            alt={settings.siteName}
+                            class="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
+                        />
+                    ) : (
+                        <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform">
+                            {settings?.siteName?.[0] || "D"}
+                        </div>
+                    )
+                }
+                <div class="flex flex-col">
+                    <span
+                        class="text-lg font-bold text-slate-900 dark:text-white leading-tight"
+                        >{settings?.siteName || "Desa Makmur"}</span
+                    >
+                    <span
+                        class="text-xs text-slate-500 uppercase tracking-wider font-medium"
+                        >{settings?.kabupaten || "Kabupaten Sejahtera"}</span
+                    >
+                </div>
+            </a>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden xl:flex items-center space-x-1">
+                {
+                    navLinks.map((link) => {
+                        const active = isActive(link.href);
+                        return (
+                            <a
+                                href={link.href}
+                                class={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                                    active
+                                        ? "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 font-bold"
+                                        : "text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30"
+                                }`}
+                            >
+                                {link.label}
+                            </a>
+                        );
+                    })
+                }
+                <!-- Search Icon/Input -->
+                <form action="/search" method="get" class="ml-4 relative group">
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="Cari..."
+                        class="pl-4 pr-10 py-2 w-32 focus:w-48 transition-all rounded-full bg-slate-100 border-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <button
+                        type="submit"
+                        class="absolute right-0 top-0 h-full px-3 text-slate-500 hover:text-primary-600"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            ></path>
+                        </svg>
+                    </button>
+                </form>
+
+                <!-- Theme Toggle -->
+                <ThemeToggle />
+            </nav>
+
+            <!-- Mobile Controls -->
+            <div class="flex items-center space-x-2 xl:hidden">
+                <ThemeToggle />
+                <!-- Mobile Menu Button -->
+                <button
+                    id="mobile-menu-button"
+                    class="p-2 text-slate-600 hover:text-primary-600 focus:outline-none transition-colors"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-8 w-8"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </Container>
+
+    <!-- Mobile Nav -->
+    <div
+        id="mobile-menu"
+        class="hidden xl:hidden bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 animate-fade-in-down transition-colors duration-300"
+    >
+        <div class="flex flex-col p-4 space-y-1">
+            <form action="/search" method="get" class="mb-4 relative">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Cari berita..."
+                    class="w-full pl-4 pr-10 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                />
+                <button
+                    type="submit"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-600"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        ></path>
+                    </svg>
+                </button>
+            </form>
+            {
+                navLinks.map((link) => {
+                    const active = isActive(link.href);
+                    return (
+                        <a
+                            href={link.href}
+                            class={`px-4 py-3 text-base font-medium rounded-lg transition-colors ${
+                                active
+                                    ? "text-primary-600 bg-primary-50 font-bold"
+                                    : "text-slate-700 hover:text-primary-600 hover:bg-primary-50"
+                            }`}
+                        >
+                            {link.label}
+                        </a>
+                    );
+                })
+            }
+            }
+        </div>
+    </div>
+</header>
+
+<script>
+    const btn = document.getElementById("mobile-menu-button");
+    const menu = document.getElementById("mobile-menu");
+
+    btn?.addEventListener("click", () => {
+        menu?.classList.toggle("hidden");
+    });
+</script>

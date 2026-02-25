@@ -1,0 +1,118 @@
+---
+import MainLayout from "../../../layouts/MainLayout.astro";
+import Container from "../../../components/Container.astro";
+import SectionTitle from "../../../components/SectionTitle.astro";
+import CardBerita from "../../../components/CardBerita.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+    const authors = await getCollection("authors");
+    return authors.map((author) => ({
+        params: { slug: author.slug },
+        props: { author },
+    }));
+}
+
+const { author } = Astro.props;
+const allBerita = await getCollection("berita");
+
+// Filter berita by this author
+// Note: entry.data.author will be the filename ID (e.g., "authors/john-doe.md" or just "john-doe")
+// We need to match it flexibly
+const authorNews = allBerita
+    .filter((berita) => {
+        const beritaAuthor = berita.data.author;
+        if (!beritaAuthor) return false;
+
+        // Parse ID from path if necessary to ensure exact match
+        const authorId = beritaAuthor
+            .split("/")
+            .pop()
+            .replace(".md", "")
+            .replace(".mdx", "");
+
+        // Strict case-insensitive match
+        return authorId.toLowerCase() === author.slug.toLowerCase();
+    })
+    .sort(
+        (a, b) =>
+            new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+    );
+---
+
+<MainLayout title={`Berita oleh ${author.data.name}`}>
+    <section class="pt-32 pb-12 bg-slate-50">
+        <Container>
+            <div class="max-w-4xl mx-auto text-center">
+                <div
+                    class="w-32 h-32 mx-auto bg-white rounded-full p-1 shadow-lg mb-6"
+                >
+                    <div
+                        class="w-full h-full rounded-full overflow-hidden bg-slate-200"
+                    >
+                        {
+                            author.data.avatar ? (
+                                <img
+                                    src={author.data.avatar}
+                                    alt={author.data.name}
+                                    class="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div class="w-full h-full flex items-center justify-center text-4xl font-bold text-slate-400">
+                                    {author.data.name[0]}
+                                </div>
+                            )
+                        }
+                    </div>
+                </div>
+                <h1 class="text-4xl font-bold text-slate-900 mb-2">
+                    {author.data.name}
+                </h1>
+                <p class="text-primary-600 font-medium text-lg mb-4">
+                    {author.data.role || "Kontributor"}
+                </p>
+                {
+                    author.data.bio && (
+                        <p class="text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                            {author.data.bio}
+                        </p>
+                    )
+                }
+            </div>
+        </Container>
+    </section>
+
+    <section class="py-16">
+        <Container>
+            <SectionTitle
+                title={`Artikel Ditulis`}
+                subtitle={`${authorNews.length} Berita`}
+                align="left"
+                className="mb-12"
+            />
+
+            {
+                authorNews.length > 0 ? (
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {authorNews.map((b) => (
+                            <CardBerita
+                                title={b.data.title}
+                                excerpt={b.data.excerpt || ""}
+                                date={b.data.date.toString()}
+                                image={b.data.image || ""}
+                                category={b.data.category || "Uncategorized"}
+                                slug={b.slug}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                        <p class="text-slate-500">
+                            Belum ada artikel yang ditulis.
+                        </p>
+                    </div>
+                )
+            }
+        </Container>
+    </section>
+</MainLayout>

@@ -1,0 +1,331 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import HeroSlider from "../components/HeroSlider.astro";
+import Container from "../components/Container.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+import StatCard from "../components/StatCard.astro";
+import CardBerita from "../components/CardBerita.astro";
+import PerangkatDesa from "../components/PerangkatDesa.astro";
+import Button from "../components/Button.astro";
+import { getCollection, getEntry } from "astro:content";
+
+const homeEntry = await getEntry("home", "main");
+const homeData = homeEntry?.data;
+
+const profilEntry = await getEntry("profil", "main");
+const profilData = profilEntry?.data;
+
+const infografisEntry = await getEntry("infografis", "main");
+const statistikData = infografisEntry?.data?.stats || [];
+
+const allBerita = await getCollection("berita");
+const publishedBerita = allBerita.filter((berita) => {
+	// Type assertion to bypass TS error as content collections types might not be rebuilt yet
+	const data = berita.data as any;
+	const isPublished = data.status === "Published";
+	const isScheduledVisible =
+		data.status === "Scheduled" && new Date(data.date) <= new Date();
+	return isPublished || isScheduledVisible;
+});
+const latestBerita = publishedBerita
+	.sort(
+		(a, b) =>
+			new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+	)
+	.slice(0, 3);
+
+const allUMKM = await getCollection("umkm");
+const featureUMKM = allUMKM.slice(0, 3);
+---
+
+<MainLayout title="Beranda">
+	<!-- Hero Section -->
+	<HeroSlider slides={homeData?.slides} />
+
+	<!-- Sambutan Kades -->
+	<section
+		class="section-padding bg-primary-50 dark:bg-slate-900/50 transition-colors"
+	>
+		<Container>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+				<div class="relative">
+					<div
+						class="absolute -top-4 -left-4 w-24 h-24 bg-primary-200 rounded-full mix-blend-multiply opacity-70 animate-blob"
+					>
+					</div>
+					<div
+						class="absolute -bottom-8 -right-8 w-32 h-32 bg-green-200 rounded-full mix-blend-multiply opacity-70 animate-blob animation-delay-2000"
+					>
+					</div>
+					<div
+						class="relative bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-xl overflow-hidden aspect-[3/4] transition-colors"
+					>
+						<img
+							src={homeData?.welcome?.image ||
+								"https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=800"}
+							alt="Kepala Desa"
+							class="w-full h-full object-cover rounded-2xl"
+						/>
+					</div>
+				</div>
+				<div>
+					<span
+						class="text-primary-600 font-bold uppercase tracking-widest text-sm mb-4 block"
+						>Sambutan Kepala Desa</span
+					>
+					<h2
+						class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6 leading-tight transition-colors"
+					>
+						"{
+							homeData?.welcome?.title ||
+								"Melayani dengan Hati, Membangun Desa Lebih Mandiri"
+						}"
+					</h2>
+					<p
+						class="text-lg text-slate-600 dark:text-slate-300 mb-6 italic transition-colors"
+					>
+						"{
+							homeData?.welcome?.quote ||
+								"Selamat datang di website resmi Desa Makmur. Portal ini kami hadirkan sebagai wujud transparansi dan upaya meningkatkan pelayanan kepada masyarakat di era digital."
+						}"
+					</p>
+					<div class="space-y-4 mb-8">
+						<p
+							class="text-slate-600 dark:text-slate-400 transition-colors"
+						>
+							Kami berkomitmen untuk terus berinovasi dalam
+							memberikan layanan terbaik, mengelola potensi desa,
+							dan memberdayakan seluruh elemen masyarakat demi
+							tercapainya Desa Makmur yang sejahtera.
+						</p>
+					</div>
+					<div class="flex items-center space-x-4">
+						<div class="h-1 w-12 bg-primary-600"></div>
+						<div>
+							<p
+								class="font-bold text-slate-900 dark:text-white transition-colors"
+							>
+								{
+									homeData?.welcome?.name ||
+										"Ir. H. Sudirman, M.Si."
+								}
+							</p>
+							<p class="text-sm text-slate-500 font-medium">
+								{
+									homeData?.welcome?.title ||
+										"Kepala Desa Makmur"
+								}
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</Container>
+	</section>
+
+	<!-- Statistik -->
+	<section
+		class="section-padding border-b border-slate-100 dark:border-slate-800 transition-colors"
+	>
+		<Container>
+			<SectionTitle
+				title="Statistik Desa"
+				subtitle="Gambaran umum data demografi dan infrastruktur Desa Makmur terbaru."
+				align="center"
+			/>
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+				{statistikData.map((stat) => <StatCard {...stat} />)}
+			</div>
+		</Container>
+	</section>
+
+	<!-- Berita Terbaru -->
+	<section
+		class="section-padding bg-slate-50 dark:bg-slate-900/80 transition-colors"
+	>
+		<Container>
+			<div
+				class="flex flex-col md:flex-row md:items-end justify-between mb-12"
+			>
+				<SectionTitle
+					title="Berita Terkini"
+					subtitle="Ikuti perkembangan kegiatan dan kabar terbaru dari lingkungan desa kami."
+					className="mb-0"
+				/>
+				<Button
+					href="/berita"
+					variant="outline"
+					className="hidden md:flex"
+				>
+					Lihat Semua Berita
+				</Button>
+			</div>
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+				{
+					latestBerita.map((berita) => (
+						<CardBerita
+							title={berita.data.title || ""}
+							excerpt={berita.data.excerpt || ""}
+							date={berita.data.date?.toString() || ""}
+							image={berita.data.image || ""}
+							category={berita.data.category || ""}
+							slug={berita.slug}
+						/>
+					))
+				}
+			</div>
+			<div class="mt-8 text-center md:hidden">
+				<Button href="/berita" variant="outline" className="w-full">
+					Lihat Semua Berita
+				</Button>
+			</div>
+		</Container>
+	</section>
+
+	<!-- Perangkat Desa Slider -->
+	<section
+		class="section-padding bg-white dark:bg-slate-900 transition-colors overflow-hidden"
+	>
+		<Container>
+			<SectionTitle
+				title="Perangkat Desa"
+				subtitle="Mengenal lebih dekat para pelayan masyarakat yang berdedikasi untuk kemajuan Desa Makmur."
+				align="center"
+			/>
+			<PerangkatDesa staff={profilData?.perangkat || []} />
+		</Container>
+	</section>
+
+	<!-- Layanan Cepat -->
+	<section class="section-padding">
+		<Container>
+			<SectionTitle
+				title="Layanan Cepat"
+				subtitle="Akses mudah berbagai keperluan administratif dan informasi pelayanan desa."
+				align="center"
+			/>
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+				{
+					[
+						{
+							icon: "📄",
+							label: "Surat Keterangan",
+							desc: "Pembuatan surat-surat online",
+							href: "/layanan",
+						},
+						{
+							icon: "🔍",
+							label: "Lacak Surat",
+							desc: "Pantau status permohonan",
+							href: "/layanan", // Tab state can be handled by hash if needed, but linking to main hub is fine
+						},
+						{
+							icon: "🛡️",
+							label: "Cek Bantuan",
+							desc: "Status penerima bansos",
+							href: "/layanan",
+						},
+						{
+							icon: "📞",
+							label: "Pengaduan",
+							desc: "Sampaikan aspirasi Anda",
+							href: "/layanan", // Could map to contact or a future pengaduan tab
+						},
+					].map((item) => (
+						<a
+							href={item.href}
+							class="p-8 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-primary-200 dark:hover:border-primary-500 transition-all text-center group"
+						>
+							<div class="text-4xl mb-4 group-hover:scale-125 transition-transform">
+								{item.icon}
+							</div>
+							<h4 class="font-bold text-slate-900 dark:text-white mb-2 transition-colors">
+								{item.label}
+							</h4>
+							<p class="text-xs text-slate-500 dark:text-slate-400 leading-tight transition-colors">
+								{item.desc}
+							</p>
+						</a>
+					))
+				}
+			</div>
+		</Container>
+	</section>
+
+	<!-- CTA UMKM -->
+	<section class="section-padding">
+		<Container>
+			<div
+				class="relative bg-primary-700 rounded-3xl overflow-hidden p-8 md:p-16"
+			>
+				<div
+					class="absolute top-0 right-0 w-1/2 h-full opacity-20 pointer-events-none"
+				>
+					<svg
+						class="h-full w-full"
+						viewBox="0 0 100 100"
+						preserveAspectRatio="none"
+					>
+						<path d="M0 100 L100 0 L100 100 Z" fill="white"></path>
+					</svg>
+				</div>
+				<div
+					class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center text-white"
+				>
+					<div>
+						<h2 class="text-3xl md:text-5xl font-bold mb-6">
+							Dukung Produk Lokal, <br />Majukan Ekonomi Desa!
+						</h2>
+						<p class="text-primary-100 text-lg mb-8 max-w-lg">
+							Temukan berbagai produk unggulan hasil kerajinan dan
+							tani kearifan lokal warga Desa Makmur yang
+							berkualitas.
+						</p>
+						<Button
+							href="/belanja"
+							variant="secondary"
+							size="lg"
+							className="bg-white text-primary-700 hover:bg-primary-50"
+						>
+							Kunjungi Belanja Desa
+						</Button>
+					</div>
+					<div class="grid grid-cols-2 gap-4">
+						{
+							featureUMKM.map((umkm, i) => (
+								<img
+									src={umkm.data.image}
+									class={`rounded-2xl shadow-lg border-2 border-primary-600/50 ${i === 1 ? "mt-8" : ""}`}
+									alt={umkm.data.name}
+								/>
+							))
+						}
+					</div>
+				</div>
+			</div>
+		</Container>
+	</section>
+</MainLayout>
+
+<style>
+	@keyframes blob {
+		0% {
+			transform: scale(1);
+		}
+		33% {
+			transform: scale(1.1);
+		}
+		66% {
+			transform: scale(0.9);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
+	.animate-blob {
+		animation: blob 7s infinite;
+	}
+	.animation-delay-2000 {
+		animation-delay: 2s;
+	}
+</style>

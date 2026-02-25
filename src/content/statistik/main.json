@@ -1,0 +1,28 @@
+{
+    "stats": [
+        {
+            "label": "Total Penduduk",
+            "value": "4.250",
+            "unit": "Jiwa",
+            "icon": "users"
+        },
+        {
+            "label": "Luas Wilayah",
+            "value": "850",
+            "unit": "Ha",
+            "icon": "map"
+        },
+        {
+            "label": "Jumlah Dusun",
+            "value": "6",
+            "unit": "Dusun",
+            "icon": "home"
+        },
+        {
+            "label": "Jumlah UMKM",
+            "value": "124",
+            "unit": "Usaha",
+            "icon": "shopping-bag"
+        }
+    ]
+}

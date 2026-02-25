@@ -1,0 +1,85 @@
+{
+  "title": "PPID",
+  "description": "Pejabat Pengelola Informasi dan Dokumentasi (PPID) adalah pejabat yang bertanggung jawab di bidang penyimpanan, pendokumentasian, penyediaan, dan/atau pelayanan informasi di badan publik.",
+  "buttonLabel": "Dasar Hukum PPID",
+  "buttonLink": "/dasar-hukum-ppid",
+  "sectionTitle": "INFORMASI PUBLIK TERBARU",
+  "sectionSubtitle": "Update terakhir sebulan yang lalu",
+  "categories": [
+    {
+      "title": "Informasi Secara Berkala",
+      "description": "Informasi yang wajib disediakan dan diumumkan secara berkala.",
+      "groups": [
+        {
+          "title": "Anggaran Pendapatan dan Belanja Desa",
+          "documents": [
+            {
+              "title": "DAFTAR HADIR MUSRENBANG",
+              "date": "Kamis, 7 Agustus 2025",
+              "file": "/uploads/SPMB.pdf"
+            },
+            {
+              "title": "SURAT KEPUTUSAN BPD TENTANG PERSETUJUAN APBDES 2025",
+              "date": "Kamis, 7 Agustus 2025",
+              "file": "/uploads/SPMB.pdf"
+            }
+          ]
+        },
+        {
+          "title": "Informasi tentang Peraturan, Keputusan, dan/atau Kebijakan",
+          "documents": [
+            {
+              "title": "PERATURAN DESA TENTANG TATA TERTIB MUSYAWARAH DESA",
+              "date": "Rabu, 6 Agustus 2025",
+              "file": "/uploads/SPMB.pdf"
+            }
+          ]
+        },
+        {
+          "title": "Struktur Organisasi Pemerintah Desa",
+          "documents": []
+        },
+        {
+          "title": "Informasi tentang program atau kegiatan desa",
+          "documents": []
+        },
+        {
+          "title": "Ringkasan Laporan Keuangan",
+          "documents": []
+        }
+      ]
+    },
+    {
+      "title": "Informasi Serta Merta",
+      "description": "Informasi yang dapat mengancam hajat hidup orang banyak dan ketertiban umum.",
+      "groups": [
+        {
+          "title": "Peringatan Dini Kebencanaan",
+          "documents": [
+            {
+              "title": "PROSEDUR EVAKUASI BANJIR",
+              "date": "Senin, 4 Agustus 2025",
+              "file": "/uploads/SPMB.pdf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Informasi Setiap Saat",
+      "description": "Informasi yang wajib disediakan dan diberikan setiap saat jika ada permohonan.",
+      "groups": [
+        {
+          "title": "Daftar Peraturan Desa",
+          "documents": [
+            {
+              "title": "KUMPULAN PERDES 2024",
+              "date": "Minggu, 3 Agustus 2025",
+              "file": "/uploads/SPMB.pdf"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

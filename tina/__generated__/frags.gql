@@ -1,0 +1,300 @@
+fragment ManajemenSuratParts on ManajemenSurat {
+  __typename
+  title
+  dashboard
+}
+
+fragment BeritaParts on Berita {
+  __typename
+  title
+  date
+  author {
+    ... on Authors {
+      __typename
+      name
+      avatar
+      role
+      bio
+    }
+    ... on Document {
+      _sys {
+        filename
+        basename
+        hasReferences
+        breadcrumbs
+        path
+        relativePath
+        extension
+      }
+      id
+    }
+  }
+  image
+  category
+  excerpt
+  status
+  body
+  tags
+}
+
+fragment UmkmParts on Umkm {
+  __typename
+  name
+  price
+  owner
+  image
+  gallery
+  category
+  phone
+  status
+  description
+}
+
+fragment BantuanSosialParts on BantuanSosial {
+  __typename
+  penerima {
+    __typename
+    nik
+    nama
+    alamat
+    program {
+      __typename
+      namaProgram
+      kategori
+      status
+      keterangan
+    }
+  }
+}
+
+fragment PengaduanParts on Pengaduan {
+  __typename
+  nama
+  tanggal
+  pesan
+  jawabanAdmin
+  status
+}
+
+fragment HomeParts on Home {
+  __typename
+  slides {
+    __typename
+    title
+    subtitle
+    image
+    ctaLabel
+    ctaLink
+  }
+  welcome {
+    __typename
+    quote
+    name
+    title
+    image
+  }
+}
+
+fragment GalleryParts on Gallery {
+  __typename
+  title
+  image
+  category
+  date
+}
+
+fragment ProfilParts on Profil {
+  __typename
+  hero {
+    __typename
+    title
+    subtitle
+    image
+  }
+  sejarah
+  visiMisi {
+    __typename
+    visi
+    misi
+  }
+  organisasiImage
+  wilayah {
+    __typename
+    name
+    kepala
+    penduduk
+  }
+  perangkat {
+    __typename
+    name
+    position
+    image
+  }
+}
+
+fragment PpidParts on Ppid {
+  __typename
+  title
+  description
+  buttonLabel
+  buttonLink
+  sectionTitle
+  sectionSubtitle
+  categories {
+    __typename
+    title
+    description
+    groups {
+      __typename
+      title
+      documents {
+        __typename
+        title
+        date
+        file
+      }
+    }
+  }
+}
+
+fragment InfografisParts on Infografis {
+  __typename
+  idm {
+    __typename
+    tahun
+    status
+    skor
+    targetStatus
+    skorMinimal
+    penambahan
+    iks
+    ike
+    ikl
+    riwayatSkor {
+      __typename
+      tahun
+      skor
+    }
+    indicators {
+      __typename
+      group
+      indicator
+      score
+      keterangan
+      kegiatan
+      nilaiPlus
+      stakeholders
+    }
+  }
+  apbdes {
+    __typename
+    tahun
+    persentaseRealisasi
+    fileLaporan
+    rincianBelanja {
+      __typename
+      bidang
+      anggaran
+      persentase
+      warna
+    }
+  }
+  penduduk {
+    __typename
+    periode
+    lakiLaki
+    perempuan
+    agama {
+      __typename
+      agama
+      jumlah
+      persentase
+    }
+  }
+  stunting {
+    __typename
+    tren
+    targetTahunIni
+    anakTerdampak
+    dataTahunan {
+      __typename
+      tahun
+      persentase
+    }
+  }
+  sdgs {
+    __typename
+    daftarPencapaian {
+      __typename
+      tujuan
+      skor
+      bgColor
+      textColor
+    }
+  }
+  bansos {
+    __typename
+    statusPenyaluran
+    periode
+    program {
+      __typename
+      nama
+      jumlah
+      satuan
+      icon
+      warnaCss
+    }
+  }
+  stats {
+    __typename
+    label
+    value
+    unit
+    icon
+  }
+}
+
+fragment AuthorsParts on Authors {
+  __typename
+  name
+  avatar
+  role
+  bio
+}
+
+fragment SettingsParts on Settings {
+  __typename
+  siteName
+  siteUrl
+  kabupaten
+  address
+  phone
+  whatsappLayanan
+  email
+  logo
+  social {
+    __typename
+    facebook
+    instagram
+    youtube
+  }
+  googleMapsUrl
+  theme {
+    __typename
+    primaryColor
+    secondaryColor
+  }
+  kategoriBerita
+  kategoriUMKM
+  kategoriGaleri
+  seo {
+    __typename
+    defaultTitle
+    titleTemplate
+    defaultDescription
+    defaultKeywords
+    favicon
+    ogImage
+    googleAnalyticsId
+  }
+}
