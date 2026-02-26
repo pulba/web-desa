@@ -3,20 +3,21 @@ import CategorySelect from "./CategorySelect";
 import SuratManager from "./components/SuratManager";
 
 // Your hosting provider likely exposes this as an environment variable
-const branch =
+const branch = (
     process.env.GITHUB_BRANCH ||
     process.env.VERCEL_GIT_COMMIT_REF ||
     process.env.HEAD ||
     process.env.CF_PAGES_BRANCH ||
-    "main";
+    "main"
+).trim();
 
 export default defineConfig({
     branch,
 
     // Get this from tina.io
-    clientId: process.env.TINA_CLIENT_ID,
+    clientId: process.env.TINA_CLIENT_ID?.trim() || "",
     // Get this from tina.io
-    token: process.env.TINA_TOKEN,
+    token: process.env.TINA_TOKEN?.trim() || "",
 
     build: {
         outputFolder: "admin",
