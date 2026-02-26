@@ -265,13 +265,13 @@ function SuratManager(props) {
 }
 
 // tina/config.ts
-var branch = process.env.GITHUB_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || process.env.HEAD || "main";
+var branch = (process.env.GITHUB_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || process.env.HEAD || process.env.CF_PAGES_BRANCH || "main").trim();
 var config_default = defineConfig({
   branch,
   // Get this from tina.io
-  clientId: process.env.TINA_CLIENT_ID,
+  clientId: process.env.TINA_CLIENT_ID?.trim() || "",
   // Get this from tina.io
-  token: process.env.TINA_TOKEN,
+  token: process.env.TINA_TOKEN?.trim() || "",
   build: {
     outputFolder: "admin",
     publicFolder: "public"
